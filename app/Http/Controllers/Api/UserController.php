@@ -8,6 +8,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Models\Role;
 
 class UserController extends Controller
 {
@@ -100,24 +101,15 @@ class UserController extends Controller
         if (auth()->user()->roles->first()->name !== "admin") {
             abort(403, 'Unauthorized');
         }
-
-        $role = $request->user()->roles()->first();
-
-
-        // Vérifier si le rôle est valide
-        $valid_roles = ['admin', 'basic', 'editor'];
-        if (!in_array($role->name, $valid_roles)) {
-            abort(400, 'Invalid role');
-        }
-
-        // Trouver l'utilisateur correspondant à l'ID
+        // Vérifier si l'utilisateur existe
         $user = User::findOrFail($id);
+        $role = Role::findOrFail($request->role_id);
 
-        // Mettre à jour le rôle de l'utilisateur
-        $user->role = $request->role;
-        $user->save();
+        $user->roles()->attach($role);
 
-        return response()->json($user);
+        return response()->json([
+            'message' => 'Role assigned successfully'
+        ]);
     }
 
 
