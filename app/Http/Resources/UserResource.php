@@ -19,12 +19,17 @@ class UserResource extends JsonResource
         $role = $this->roles()->first();
         $roleName = $role ? $role->name : null;
 
+        $filiale = $this->filiales()->first();
+        $filiale_id = $filiale ? $filiale->id : null;
+        $filiale_name = $filiale ? $filiale->nom_filiale : "non";
+        
         return [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'role' => $roleName
+            'role' => $roleName,
+            'filiale' => ["id" => $filiale_id, "name" => $filiale_name]
         ];
     }
 

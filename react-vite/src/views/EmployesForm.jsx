@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -24,10 +24,16 @@ import * as yup from "yup";
 import axiosClient from "../axios-client";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import { useStateContext } from "../contexts/ContextProvider";
 
 export default function EmployeForm() {
 
+  const [user, setUser] = useState()
+  const [role, setRole] = useState()
+  const [filiale, setFiliale] = useState()
+  const [filiales, setFiliales] = useState()
   const [serverError, setServerError] = useState(null)
+  const {setNotification} = useStateContext()
 
   const useScheme = yup.object({
     nom: yup.string().required("le champ nom est obligatoire"),
@@ -36,8 +42,10 @@ export default function EmployeForm() {
     sexe: yup.string().required("ce champ est obligatoire"),
     date_naissance: yup.date().required("le champs date de naissance est obligatoire"),
     date_recrutement: yup.date().required('le champ date de recrutement est obligatoire'),
+    date_retraite: yup.date().required('le champ date de retraite est obligatoire'),
     temp_occuper: yup.string().required('ce champ est obligatoire'),
     contract: yup.string().required('le champs contract est obligatoire'),
+    categ_sociopro: yup.string().required('veillez ajouter une valeur a ce champs'),
     handicape: yup.boolean().required()
   })
   const { handleSubmit, control, setError, register, formState, formState: { errors } } = useForm({
@@ -59,28 +67,44 @@ export default function EmployeForm() {
       date_recrutement: dayjs(data.date_recrutement).format("YYYY-MM-DD"),
       contract: data.contract,
       temp_occuper: data.temp_occuper,
-      handicape: data.handicape
+      handicape: data.handicape,
+      categ_sociopro: data.categ_sociopro,
+      date_retraite: dayjs(data.date_retraite).format("YYYY-MM-DD"),
+      observation: data.observation,
+      filiale_id: filiale.id ? filiale.id : data.filiale,
     }
-    // console.log(employe)
     axiosClient.post('/employes', employe)
     .then(() => {
-      console.log('success')
+      setNotification("l'utilisateur à bien été saiséer")
       navigate('/employes')
     })
     .catch((err) => {
       console.log(err)
       const response = err.response;
       if (response && response.status === 422) {
-        // setError('server', { 
-        //   type: response.status,
-        //   message: response.data.errors
-        // });
-        // console.log(errors.server[0])
         setServerError(response.data.errors)
       }
     })
   }
 
+  const fetchUser = async () => {
+    const { data } = await axiosClient.get('/user')
+    setUser(data.user)
+    setRole(data.role)
+    setFiliale(data.filiale)
+  }
+  const getFiliales = () => {
+    axiosClient.get('/filiale').then(({data}) => {
+      setFiliales(data.filiale)
+    }).catch((error) => {
+      console.log(error)
+    })
+  }
+
+  useEffect(() => {
+    getFiliales()
+    fetchUser()
+  }, [])
 
   return (
     <>
@@ -165,6 +189,28 @@ export default function EmployeForm() {
               )}
             />
 
+            <Controller
+              control={control}
+              name="date_retraite"
+              rules={{ required: true }}
+              render={({ field: { onChange } }) => (
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                sx={{ gridColumn: "span 2" }}
+                  onChange={(event) => { onChange(event)}}
+                  format="DD/MM/YYYY"
+                  label="date de retraite" 
+                  slotProps={{
+                    textField: {
+                      error: errors.date_retraite ? true : false,
+                      helperText: errors.date_retraite?.message 
+                    }
+                  }}
+                />
+              </LocalizationProvider>
+              )}
+            />
+
             <FormControl variant="outlined" 
               sx={{ gridColumn: "span 2" }}>
               <InputLabel id="demo-simple-select-label"> Sexe </InputLabel>
@@ -229,6 +275,20 @@ export default function EmployeForm() {
 
             </FormControl>
 
+            <TextField
+              label="Catégorie socio profetionnelle"
+              variant="outlined"
+              {...register("categ_sociopro", { required: true })}
+              sx={{ gridColumn: "span 2" }}
+              error={errors.categ_sociopro ? true : false}
+              helperText={errors.categ_sociopro && errors.categ_sociopro?.message}
+            />
+            <TextField
+              label="Observation"
+              variant="outlined"
+              {...register("observation")}
+              sx={{ gridColumn: "span 2" }}
+            />
             <Controller
               control={control}
               defaultValue={false}
@@ -256,7 +316,26 @@ export default function EmployeForm() {
                 </RadioGroup>
               )}
             />     
-      
+            {(role === 'admin') && 
+            <Controller
+              control={control}
+              name="filiale"
+              render={({ field: { onChange } }) => (
+                <FormControl variant="outlined" sx={{ width: "300px" }}>
+                  <InputLabel id="demo-simple-select-label"> filiale  </InputLabel>
+                  <Select
+                    sx={{ gridColumn: "span 2" }}
+                    label="filiale access"
+                   {...register("filiale")}
+                    // onChange={e => {onChange(e); setFiliale(e.target.value);}} 
+                  >
+                    {filiales?.map(filiale => (
+                      <MenuItem value={filiale.id} key={filiale.id}> {filiale.nom_filiale} </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+            />  }      
             </Box>   
             <Box display="flex" justifyContent="end" mt="20px">
               <Button  type="submit" color="success" variant="contained">

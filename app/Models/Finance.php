@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Employe;
 
-class Retraiter extends Model
+class Finance extends Model
 {
     use HasFactory;
 
 
 
-    public function employe() 
+    public function entreprise()
     {
-        return $this->belongsTo(Employe::class);
+        return $this->belongsTo(Entreprises::class, 'id_entreprise');
     }
+
 }

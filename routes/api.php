@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmployeController;
+use App\Http\Controllers\Api\FilialeController;
+use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\api\StartController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
@@ -22,7 +24,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [StartController::class, 'index']);
 
     Route::apiResource('/users', UserController::class);
+    Route::get('/roles', [RoleController::class, 'index']);
+    Route::put('/roles/{id}', [RoleController::class, 'store'])->whereNumber('id');
     Route::apiResource('/employes', EmployeController::class);
+    Route::get('/filiale', [FilialeController::class, 'index']);
+    Route::post('/filiale/{id}', [FilialeController::class, 'store']);
+    Route::put('/filiale/{id}', [FilialeController::class, 'update'])->whereNumber('id');;
 
 });
 

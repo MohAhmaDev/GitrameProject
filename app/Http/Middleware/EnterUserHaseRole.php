@@ -17,8 +17,8 @@ class EnterUserHaseRole
     {
         if ($request->user()->roles()->where('name', $role)->exists()) {
             return $next($request);            
-        } else {
-            abort(403);
+        } else {                    
+            abort(403);             
         }   
     }
 }

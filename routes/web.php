@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\RoleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,19 +15,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+
+    // $user = \App\Models\User::find(1);
+    // $filliale = \App\Models\Filiale::find(2);
+    // return ($filliale->dettes);
+
     return view('welcome');
-    // $user = \App\Models\User::whereDoesntHave('roles', function($query) {
-    //     $query->where('name', 'admin');
-    // })->get();
-    // // $role = $user->roles;
-    // dd($user);
-    // dd($user->roles()->where('name', 'admin')->get()->name);
 });
 
-
-// Route::middleware(['role:admin'])->group(function () {
-
-//     Route::get('/private', function () {
-//         return "Bonjour admin";
-//     });
-// });
+//

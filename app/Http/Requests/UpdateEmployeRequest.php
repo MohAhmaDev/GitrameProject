@@ -28,19 +28,28 @@ class UpdateEmployeRequest extends FormRequest
             "fonction" => 'required|string|max:55',
             "sexe" => [
                 'required',
+                'string',
                 Rule::in(['Femme', 'Homme'])
             ],
-            "date_naissance" => 'required|date|after:01-01-1960',
-            "date_recrutement" => 'required|date|after:01-01-2016',
+            "date_naissance" => ['required','date','after:1960-01-01', 'before:2005-01-01'],
+            "date_recrutement" => ['required','date','after:2016-01-01', 'before:2023-04-08'],
+            "date_retraite" => ['required','date','after:2016-01-01', 'before:2023-04-08'],
             "contract" => [
                 'required',
+                'string',
                 Rule::in(['CDI', 'CDD'])
             ],
             "temp_occuper" => [
                 'required',
+                'string',
                 Rule::in(['Temps plein', 'Temps partiel'])
             ],
-            "handicape" => 'boolean|required',            
+            "categ_sociopro" => [
+                'required',
+                'string',
+            ],
+            "handicape" => 'boolean', 
+            "observation" => 'prohibited'           
         ];
     }
 }

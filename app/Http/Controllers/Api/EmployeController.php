@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Employe;
 use App\Http\Requests\StoreEmployeRequest;
 use App\Http\Requests\UpdateEmployeRequest;
+use App\Models\Filiale;
 use App\Http\Resources\EmployeResource;
 
 class EmployeController extends Controller
@@ -17,7 +18,22 @@ class EmployeController extends Controller
      */
     public function index()
     {
-        $employe = Employe::query()->orderBy('id', 'desc')->paginate(10);
+        $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first->id;
+
+
+        if ($role === "admin") {
+            $employe = Employe::all();
+        } 
+        else {
+            $id = $branch->id;
+            if (!is_null($id)) {
+                $filiale = Filiale::findOrFail($id);
+                $employe = $filiale->employes;
+            } else {
+                return response([]);
+            }
+        }
         return EmployeResource::collection($employe);
     }
 
@@ -28,13 +44,28 @@ class EmployeController extends Controller
     {
 
         $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first->id;
+
+
         $auth = ["admin", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
 
         $data = $request->validated();
-        $data['handicape'] = !empty($employe['handicape']) ? $employe['handicape'] : false;
+        $data['handicape'] = !empty($data['handicape']) ? $data['handicape'] : false;
+
+        if ($role !== "admin") {
+            if (!is_null($branch->id)) {
+                $data['filiale_id'] = !empty($data['filiale_id']) ? $data['filiale_id'] : $branch;
+            } else {
+                return response([
+                    'message' => "you don't have the permission de to this action"
+                ], 422);                
+            }
+        }
+
+
 
         $employe = Employe::create($data);
         return new EmployeResource($employe);
@@ -45,6 +76,18 @@ class EmployeController extends Controller
      */
     public function show(Employe $employe)
     {
+        $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first->id;
+
+        if ($role !== "admin") {
+            if ($employe->filiale_id !== $branch->id) {
+                return response([
+                    'message' => "you don't have the permission de to this action"
+                ], 422);    
+            }
+        }
+
+
         return new EmployeResource($employe);
     }
 
@@ -54,9 +97,20 @@ class EmployeController extends Controller
     public function update(UpdateEmployeRequest $request, Employe $employe)
     {
         $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first->id;
+
+
         $auth = ["admin", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
+        }
+
+        if ($role !== "admin") {
+            if ($employe->filiale_id !== $branch->id) {
+                return response([
+                    'message' => "you don't have the permission de to this action"
+                ], 422);    
+            }
         }
 
         $data = $request->validated();
@@ -70,11 +124,21 @@ class EmployeController extends Controller
     public function destroy(Employe $employe)
     {
         $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first->id;
+
         $auth = ["admin", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
 
+        if ($role !== "admin") {
+            if ($employe->filiale_id !== $branch->id) {
+                return response([
+                    'message' => "you don't have the permission de to this action"
+                ], 422);    
+            }
+        }  
+        
         $employe->delete();
         return response()->json(['message' => 'Employee deleted successfully']);
     }

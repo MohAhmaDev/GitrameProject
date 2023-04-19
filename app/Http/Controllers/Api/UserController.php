@@ -19,7 +19,6 @@ class UserController extends Controller
      */
     public function index()
     {
-        
         $users = User::whereDoesntHave('roles', function($query) {
             $query->where('name', 'admin');
         })->get();        
@@ -41,6 +40,9 @@ class UserController extends Controller
         $data = $request->validated();
         $data['password'] = bcrypt($data['password']);
         $user = User::create($data);
+
+        $basicRole = Role::where('name', 'basic')->firstOrFail();
+        $user->roles()->attach($basicRole->id);
 
         return response(new UserResource($user) , 201);
     }
@@ -94,24 +96,6 @@ class UserController extends Controller
         $user->delete();
         return response("", 204);
     }
-
-    public function assignRole(Request $request, $id)
-    {
-        // Vérifier si l'utilisateur est administrateur
-        if (auth()->user()->roles->first()->name !== "admin") {
-            abort(403, 'Unauthorized');
-        }
-        // Vérifier si l'utilisateur existe
-        $user = User::findOrFail($id);
-        $role = Role::findOrFail($request->role_id);
-
-        $user->roles()->attach($role);
-
-        return response()->json([
-            'message' => 'Role assigned successfully'
-        ]);
-    }
-
 
 
     

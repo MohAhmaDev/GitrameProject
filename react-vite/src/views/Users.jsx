@@ -8,9 +8,7 @@ import { useForm } from 'react-hook-form';
 export default function Users() {
 
 
-
-
-
+  const [filiale, setFiliale] = useState({})
   const [users, setUsers] = useState();
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState(null);
@@ -49,11 +47,12 @@ export default function Users() {
     .then(({data}) => {
         setUser(data.user)
         setRole(data.role);
+        setFiliale(data.filiale)
     })
   }, [])
 
-  // console.log("users : ", user)
 
+  console.log(filiale.id)
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -64,9 +63,9 @@ export default function Users() {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
+            <th>Filiale</th>
             <th>Name</th>
-            <th>Email</th>
+            <th>access</th>
             <th>Create Date</th>
             <th>Actions</th>
           </tr>
@@ -84,7 +83,8 @@ export default function Users() {
             <tbody>
             {users.map(u => (
               <tr key={u.id}>
-                <td>{u.id}</td>
+                <td>{!u.filiale?.id ? <Link to={`/users/filiale/${u.id}`}> ajouter </Link> 
+                : u.filiale?.name}</td>
                 <td>{u.name}</td>
                 <td>{!u.role ? "no role assigned" : u.role}</td>
                 <td>{u.created_at}</td>

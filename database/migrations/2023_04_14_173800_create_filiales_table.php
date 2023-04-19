@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('retraiters', function (Blueprint $table) {
+        Schema::create('filiales', function (Blueprint $table) {
             $table->id();
-            $table->string('categorie_socio_profetionnelle');
-            $table->string('position');
-            $table->date('date_retraite');
-            $table->mediumText('observation');
-            $table->foreignId('employe_id')->constrained()->onDelete('cascade');
+            $table->string('nom_filiale');
+            $table->string('address');
+            $table->string('ville');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('retraiters');
+        Schema::dropIfExists('filiales');
     }
 };

@@ -4,15 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Employe;
 
-class Formation extends Model
+class Stagiaire extends Model
 {
     use HasFactory;
 
-
-    public function employe() 
+    public function filiale()
     {
-        return $this->belongsTo(Employe::class);
+        return $this->belongsTo(Filiale::class);
     }
 }

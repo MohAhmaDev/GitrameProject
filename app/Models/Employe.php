@@ -14,7 +14,8 @@ class Employe extends Model
 
     protected $fillable = [
         'nom', 'prenom', 'fonction', 'sexe', 'date_naissance', 'date_recrutement',
-        'contract', 'temp_occuper', 'handicape'
+        'contract', 'temp_occuper', 'handicape', 'date_retraite', 'categ_sociopro',
+        'observation', 'filiale_id'
     ];
 
     protected static function boot()
@@ -23,20 +24,15 @@ class Employe extends Model
 
         // generate employe_id before creating the record
         static::creating(function ($employe) {
-            $employe->numero_securite_social = fake()->unique()->numerify("employe-#######");
+            $employe->numero_securite_social = fake()->unique()->numerify("########");
         });
     }
 
-    public function formation() 
-    {
-        return $this->hasOne(Formation::class);
-    }
 
-    public function retraiter() 
+    public function filiale()
     {
-        return $this->hasOne(Retraiter::class);
+        return $this->belongsTo(Filiale::class);
     }
-
 
     
 }

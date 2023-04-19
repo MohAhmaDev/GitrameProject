@@ -60,9 +60,6 @@ export default function Signup() {
     })
   }
 
-  // const onClick = data => console.log(data);
-  console.log(errors)
-
   return (
     <div className='login-signup-form animated fadeInDown'>
       <div className='form'>
