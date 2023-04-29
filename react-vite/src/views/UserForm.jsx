@@ -249,7 +249,8 @@ export default function UserForm() {
                    {...register("filiale")}
                     onChange={e => {onChange(e); setFiliale(e.target.value);}} 
                   >
-                    {(filiales !== null && filiales !== undefined) && filiales?.map(filiale => (
+                    {(filiales !== null && filiales !== undefined && (Object.keys(filiales).length !== 0)) 
+                    && filiales?.map(filiale => (
                       <MenuItem value={filiale.id} key={filiale.id}> {filiale.name} </MenuItem>
                     ))}
                   </Select>
