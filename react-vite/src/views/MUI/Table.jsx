@@ -38,9 +38,9 @@ const Table = ({postData, postColumns}) => {
                     }
                 }}>
                     <DataGrid 
-                    rows={postData}
-                    columns={postColumns}
-                    components={{ Toolbar: GridToolbar }}
+                        rows={postData}
+                        columns={postColumns}
+                        components={{ Toolbar: GridToolbar }}
                     />
                 </Box>
             </Box>

@@ -8,18 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Creance extends Model
 {
     use HasFactory;
+    
+    public $fillable = ['intitule_projet', 'num_fact', 'num_situation',
+     'anteriorite_creance', 'date_creance', 'montant', 'observations', 'debtor_id'
+     , 'debtor_type','creditor_id', 'creditor_type'];
 
+    public function creditor()
+    {
+        return $this->morphTo();
+    }
 
-    public function entreprises()
+    public function debtor()
     {
-        return $this->belongsToMany(Entreprises::class, 'id_entreprise');
-    }
-    public function entDebitrice()
-    {
-        return $this->belongsToMany(Entreprises::class, 'id_ent_debitrice');
-    }
-    public function filiale()
-    {
-        return $this->belongsTo(Filiale::class);
+        return $this->morphTo();
     }
 }

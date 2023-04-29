@@ -3,10 +3,21 @@ import React, { useEffect } from 'react'
 import { Link, Navigate, Outlet } from 'react-router-dom'
 import axiosClient from '../axios-client';
 import { useStateContext } from '../contexts/ContextProvider';
+import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 
 export default function DefaultLayout() {
 
-    const {user, token, setUser, setToken, notification} = useStateContext();
+    const {
+        user,
+        token,
+        setUser,
+        setToken,
+        notification,
+        fetchUser,
+        role
+    } = useStateContext();
 
     if (!token) {
         return <Navigate replace to='/login' />
@@ -28,6 +39,7 @@ export default function DefaultLayout() {
         .then(({data}) => {
             setUser(data.user)
         })
+        fetchUser()
     }, [])
 
     return (
@@ -36,6 +48,10 @@ export default function DefaultLayout() {
                 <Link to='dashboard'> Dashboard </Link>
                 <Link to='/users'> Users </Link>
                 <Link to='/employes'> List of Employes </Link>
+                <Link to='/dettes'> Dette des entreprises </Link>
+                <Link to='/finances'> List of Finances </Link>
+                <Link to='/creances'> List of creances </Link>
+                <Link to='/stagiares'> List of Stagiares </Link>
             </aside>
             <div className='content'> 
                 <header>
@@ -44,6 +60,9 @@ export default function DefaultLayout() {
                     </div>
                     <div>
                         {user.name}
+                        { role === "admin" && <AdminPanelSettingsOutlinedIcon /> }
+                        { role === "editor" && <SecurityOutlinedIcon /> }
+                        { role === "basic" && <LockOpenOutlinedIcon /> }
                         <a href='#' onClick={onLogout} className="btn-logout"> Logout </a>
                     </div>
                 </header>

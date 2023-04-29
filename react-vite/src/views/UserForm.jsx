@@ -9,26 +9,27 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  CircularProgress
 } from '@mui/material'
 
 import { useForm, Controller } from 'react-hook-form'
+import { useDisplayContext } from '../contexts/DisplayContext'
 
 
 export default function UserForm() {
 
                  
   const [filiale, setFiliale] = useState(null)
-  const [filiales, setFiliales] = useState()
   const [role, setRole] = useState("")
-  const [roles, setRoles] = useState()
   const [userID, setUserID] = useState(null);
 
   const {id} = useParams()
-  const [loading, setLoading] = useState(false)
   const [additing, setAdditing] = useState(false)
   const [addFiliale, setAddFiliale] = useState(false)
-  const [errorsServer, setErrorsServer] = useState(null)
-  const {setNotification} = useStateContext()
+  const [loading, setLoading] = useState(true)
+
+  const { setNotification} = useStateContext()
+  const {filiales, getFiliales, roles, getRoles} = useDisplayContext();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -46,53 +47,42 @@ export default function UserForm() {
     password_confirmation: '',
   })
 
+
   useEffect(() => {
-    location.pathname.startsWith('/users/filiale/') && setAddFiliale(true)
+    if (location.pathname.startsWith('/users/filiale/')) {
+        setAddFiliale(true);
+        getFiliales();
+    } 
+    if (location.pathname.startsWith('/users/new')) {
+      console.log("loading")
+      setLoading(false);
+    }    
   }, [])
 
-  const getRoles = () => {
-    axiosClient.get('/roles').then(({data}) => {
-      setRoles(data.role)
-    }).catch((error) => {
-      console.log(error)
-    })
-  }
 
-  const getFiliales = () => {
-    axiosClient.get('/filiale').then(({data}) => {
-      setFiliales(data.filiale)
-    }).catch((error) => {
-      console.log(error)
+  const getUser = () => {
+    axiosClient.get(`/users/${id}`)
+    .then(({data}) => {
+      setUser(data.data);
+      setRole(data.data.role); 
+      setFiliale(data.data.filiale.id);   
+    })
+    .catch((error) => {
+      console.log(error);
     })
   }
 
   if (id) {
     useEffect(() => {
-      setLoading(null)
-      axiosClient.get(`/users/${id}`)
-      .then(({data}) => {
-        setLoading(false);
-        setUser(data.data);
-        setRole(data.data.role); 
-        setFiliale(data.data.filiale.id);   
-        getRoles();
-        getFiliales();
-    
-      })
-      .catch(() => {
-        setLoading(false)
-      })
+      getUser();
+      getRoles();
+      getFiliales();
     }, [])
-
   }
-
-
-
 
   const onSubmit = (ev) => {
     ev.preventDefault();
     if (user.id) {
-      console.log("put")
       axiosClient.put(`/users/${user.id}`, user)
       .then(() => {
         //TODO show notification
@@ -102,33 +92,32 @@ export default function UserForm() {
       .catch(err => {
         const response = err.response;
         if (response && response.status === 422) {
-          setErrorsServer(response.data.errors)
+          setError('server', {
+            message: response?.data.errors
+          })        
         }
       })
     } else {
     axiosClient.post('/users', user)
       .then(({data}) => {
-        // navigate('/users')
+        setNotification('user role addite')
         setAdditing(true);
         setRole("basic")
         getRoles();
         setUserID(data.id);
         getFiliales()
-
       })
       .catch(err => {
         const response = err.response;
         if (response && response.status === 422) {
-          setErrorsServer(response.data.errors)
+          setError('server', {
+            message: response.data.errors
+          })
+          console.log(response.data.errors);
         }
       })
     }
   }
-
-
-  useEffect(() => {
-    getFiliales()
-  }, [])
 
   const onValid = (data) => {
     axiosClient.put(`/roles/${id ? id : userID}`, {
@@ -138,69 +127,71 @@ export default function UserForm() {
       setNotification("Role User was successfuly Update")
       id ? navigate('/users') : setAddFiliale(true)
     }).catch(error => {
-      console.log(error);
+      setError('server', {
+        message: response.data.errors
+      })      
     });
   }
   const onFocus = (data) => {
-    // console.log("Filiale", data.filiale)
     if (!addFiliale) 
     {
       axiosClient.put(`/filiale/${id}`, {
         filiale_id: data.filiale
       }).then(response => {
-        console.log(response.data);
         setNotification("Filiale User was successfuly Update")
         navigate('/users')
       }).catch(error => {
         const response = err.response;
         if (response && response.status === 422) {
-          setErrorsServer(response.data.errors)
+          setError('server', {
+            message: response.data.errors
+          })        
         }
       });    
-      console.log("01", data.filiale)
     } else {
       axiosClient.post(`/filiale/${id ? id : userID}`, {
         filiale_id: data.filiale
       }).then(response => {
-        console.log(response.data);
         setNotification("Filiale User was successfuly Update")
         navigate('/users')
       }).catch(err => {
         const response = err.response;
         if (response && response.status === 422) {
-          setErrorsServer(response.data.errors)
+          setError('server', {
+            message: response.data.errors
+          })        
         }
       })
-      console.log("02",  data.filiale)
     }
   }
 
-
+  console.log(Object.keys(user) === 0)
   return (
     <>
-      {user.id && <h1> Update user: {user.name} </h1>}
-      {!user.id && <h1> New user </h1>}
+      {id && <h1> Update user: {user.name} </h1>}
+      {!id && <h1> New user </h1>}
       {(!additing && !addFiliale) && <div className="card animated fadeInDown">
-      {loading && (
+      {/* {loading && (
           <div className="text-center">
             Loading...
           </div>
-      )}
-        {errorsServer &&
+      )} */}
+        {errors?.server?.message &&
           <div className="alert">
-            {Object.keys(errorsServer).map(key => (
-              <p key={key}>{errorsServer[key][0]}</p>
+            {Object.keys(errors?.server?.message).map(key => (
+              <p>{errors?.server?.message[key][0]}</p>
             ))}
           </div>
         }
-        {(!loading && !additing && !addFiliale) &&
+        {(!additing && !addFiliale) &&
           <form onSubmit={onSubmit}>
             <input onChange={ev => setUser({...user, name: ev.target.value})}  value={user.name} type="text" placeholder='Name'/>
             <input onChange={ev => setUser({...user, email: ev.target.value})}  value={user.email} type="email" placeholder='Email' />
             <input onChange={ev => setUser({...user, password: ev.target.value})}  type="password" placeholder='Password' />
             <input onChange={ev => setUser({...user, password_confirmation: ev.target.value})}  type="password" placeholder='Password Confirmation'/>
-            <button className='btn'> Save </button>
-          </form>}
+            <button className='btn' disabled={!role}> Save </button>
+          </form>
+          }
       </div>}
 
       {(role && !addFiliale) &&
@@ -219,7 +210,7 @@ export default function UserForm() {
                       {...register("role")}
                       onChange={ (e) => { onChange(e); setRole(e.target?.value)} }
                     >
-                      {roles?.map(role => (
+                      {(roles !== null && roles !== undefined) && roles?.map(role => (
                         <MenuItem value={role.name} key={role.id}> {role.name} </MenuItem>
                       ))}
                     </Select>
@@ -235,6 +226,14 @@ export default function UserForm() {
           </form>
         </div>
       }
+      {(!(role && !addFiliale) && loading) && <Box style={{
+        width: "100%",
+        height: "150px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}> <CircularProgress disableShrink /> </Box>}
+      
       {(filiale || addFiliale) && <div className="card animated fadeInDown">
         <form onSubmit={handleSubmit(onFocus)} >
           <Box m="20px">
@@ -250,12 +249,11 @@ export default function UserForm() {
                    {...register("filiale")}
                     onChange={e => {onChange(e); setFiliale(e.target.value);}} 
                   >
-                    {filiales?.map(filiale => (
-                      <MenuItem value={filiale.id} key={filiale.id}> {filiale.nom_filiale} </MenuItem>
+                    {(filiales !== null && filiales !== undefined) && filiales?.map(filiale => (
+                      <MenuItem value={filiale.id} key={filiale.id}> {filiale.name} </MenuItem>
                     ))}
                   </Select>
-                </FormControl>
-              )}
+                </FormControl>)}
             />  
             <Box display="flex" justifyContent="end" mt="20px">
                 <Button  type="submit" color="success" variant="contained">
@@ -264,7 +262,14 @@ export default function UserForm() {
             </Box>
           </Box>
         </form>
-      </div>}
+      </div>} 
+      {(!(filiale || addFiliale) && loading) && <Box style={{
+          width: "100%",
+          height: "150px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}> <CircularProgress disableShrink /> </Box>}
     </>
   )
 }

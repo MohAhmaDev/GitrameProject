@@ -3,18 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Employe;
-use App\Http\Requests\StoreEmployeRequest;
-use App\Http\Requests\UpdateEmployeRequest;
+use App\Models\Stagiare;
+use App\Http\Requests\StoreStagiareRequest;
+use App\Http\Requests\UpdateStagiareRequest;
+use App\Http\Resources\StagiareResource;
 use App\Models\Filiale;
-use App\Http\Resources\EmployeResource;
 
-class EmployeController extends Controller
+class StagiareController extends Controller
 {
     /**
      * Display a listing of the resource.
-     * 
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index()
     {
@@ -23,24 +21,25 @@ class EmployeController extends Controller
 
 
         if ($role === "admin") {
-            $employe = Employe::all();
+            $stagiare = Stagiare::all();
         } 
         else {
             $id = $branch->id;
             if (!is_null($id)) {
                 $filiale = Filiale::findOrFail($id);
-                $employe = $filiale->employes;
+                $stagiare = $filiale->stagiares;
             } else {
                 return response([]);
             }
         }
-        return EmployeResource::collection($employe);
+        return StagiareResource::collection($stagiare);
     }
+
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreEmployeRequest $request)
+    public function store(StoreStagiareRequest $request)
     {
 
         $role = auth()->user()->roles->first()->name;
@@ -53,7 +52,6 @@ class EmployeController extends Controller
         }
 
         $data = $request->validated();
-        $data['handicape'] = !empty($data['handicape']) ? $data['handicape'] : false;
 
         if ($role !== "admin") {
             if (!is_null($branch->id)) {
@@ -65,22 +63,21 @@ class EmployeController extends Controller
             }
         }
 
+        $stagiare = Stagiare::create($data);
+        return new StagiareResource($stagiare);
 
-
-        $employe = Employe::create($data);
-        return new EmployeResource($employe);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Employe $employe)
+    public function show(Stagiare $stagiare)
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
         if ($role !== "admin") {
-            if ($employe->filiale_id !== $branch->id) {
+            if ($stagiare->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
@@ -88,13 +85,13 @@ class EmployeController extends Controller
         }
 
 
-        return new EmployeResource($employe);
+        return new StagiareResource($stagiare);    
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateEmployeRequest $request, Employe $employe)
+    public function update(UpdateStagiareRequest $request, Stagiare $stagiare)
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
@@ -106,7 +103,7 @@ class EmployeController extends Controller
         }
 
         if ($role !== "admin") {
-            if ($employe->filiale_id !== $branch->id) {
+            if ($stagiare->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
@@ -114,15 +111,17 @@ class EmployeController extends Controller
         }
 
         $data = $request->validated();
-        $employe->update($data);
-        return new EmployeResource($employe);
+        $stagiare->update($data);
+        return new StagiareResource($stagiare);
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Employe $employe)
+    public function destroy(Stagiare $stagiare)
     {
+
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first->id;
 
@@ -132,14 +131,15 @@ class EmployeController extends Controller
         }
 
         if ($role !== "admin") {
-            if ($employe->filiale_id !== $branch->id) {
+            if ($stagiare->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
             }
         }  
         
-        $employe->delete();
+        $stagiare->delete();
         return response()->json(['message' => 'Employee deleted successfully']);
+
     }
 }

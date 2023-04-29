@@ -3,20 +3,15 @@ import { Link } from 'react-router-dom';
 import axiosClient from '../axios-client';
 import { useStateContext } from '../contexts/ContextProvider';
 import { useForm } from 'react-hook-form';
+import { useDisplayContext } from '../contexts/DisplayContext';
+import { Button, CircularProgress } from '@mui/material';
 
 
 export default function Users() {
 
+  const {user, fetchUser, role, filiale, setNotification} = useStateContext()
+  const {users, loading, getUsers} = useDisplayContext()
 
-  const [filiale, setFiliale] = useState({})
-  const [users, setUsers] = useState();
-  const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState(null);
-  const {user, setUser, setNotification} = useStateContext()
-
-  useEffect(() => {
-    getUsers()
-  }, [])
 
   const onDelete = (u) => {
     if (!window.confirm(`Are you sure you want to delete the user '${u.name}'`))
@@ -30,29 +25,12 @@ export default function Users() {
     })
   }
 
-  const getUsers = () => {
-    setLoading(true)
-    axiosClient.get('/users')
-      .then(({ data }) => {
-        setLoading(false)
-        setUsers(data.data)
-      })
-      .catch(() => {
-        setLoading(false)
-      })
-  }
-
   useEffect(() => {
-    axiosClient.get('/user')
-    .then(({data}) => {
-        setUser(data.user)
-        setRole(data.role);
-        setFiliale(data.filiale)
-    })
+    getUsers()
+    fetchUser()
   }, [])
 
 
-  console.log(filiale.id)
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -74,7 +52,7 @@ export default function Users() {
             <tbody>
             <tr>
               <td colSpan="5" class="text-center">
-                Loading...
+                <CircularProgress disableShrink />
               </td>
             </tr>
             </tbody>
@@ -98,6 +76,8 @@ export default function Users() {
             </tbody>
           }
         </table>
+        {(role === "admin" && !loading) && 
+        <Link to="/entreprise/add"> <Button sx={{ margin: "20px" }} variant='contained'> ajouter une entreprise </Button> </Link>}
       </div>
     </div>
   )

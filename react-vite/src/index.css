@@ -72,7 +72,10 @@ input:focus {
     background-color: #00a762;
 }
 .btn-delete {
-    background-color: #b72424;
+    background: #ff4040;
+}
+.btn-edit {
+    background: #007bff;
 }
 
 .btn-logout {
@@ -250,3 +253,56 @@ table > tbody > tr > td {
         transform: translateY(0);
     }
 }
+
+ .card-box {
+    border-radius: 5px;
+    margin-top: 50px;
+    margin-left: 30px;
+    width: 1000px;
+    height: 500px;
+    background: #dcd9d9;
+  }
+  .top-img {
+    border-radius: 10px 10px 0 0;
+    display: block;
+    height: 100px;
+    width: 100%;
+    background: #4c4c4c;
+    object-fit: cover;
+  }
+  .top-img.skeleton-anim {
+    animation: skeleton 0.8s ease-in-out infinite alternate;
+  }
+  @keyframes skeleton {
+    to {
+      opacity: 0.6;
+    }
+  }
+  .content-box {
+    padding: 15px;
+  }
+  .skeleton-title, .skeleton-text {
+    background: #4c4c4c;
+    animation: skeleton 0.8s ease-in-out infinite alternate;
+    width: 100%;
+  }
+  .skeleton-title {
+    margin-top: 30px;
+    height: 20px;
+  }
+  .skeleton-text {
+    margin-top: 20px;
+    height: 20px;
+  }
+  .skeleton-text:first-of-type {
+    width: 100%;
+  }
+  
+  .card-title {
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+  .card-text {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }

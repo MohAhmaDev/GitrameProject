@@ -53,8 +53,6 @@ export default function Login() {
   }
 
 
-  console.log(errors)
-
   return (
     <div className='login-signup-form animated fadeInDown'>
       <div className='form'>

@@ -13,9 +13,30 @@ class FilialeController extends Controller
 
     public function index()
     {
-        $filiale = Filiale::all();
+        $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first();
+
+        if ($role === "admin") {
+            $filiales = Filiale::all();
+        } else {
+            $id = $branch->id;
+            if (!is_null($id)) {
+                $filiales = Filiale::query()->where('id', '!=', 1)->get();
+            } else {
+                return response(['filiale' => []]);
+            }
+        }
+
+
+        $results = $filiales->map(function ($filiale) {
+		    return [
+			    'id' => $filiale->id,
+			    'name' => $filiale->nom_filiale,
+		    ];
+	    });
+        
         return response([
-            'filiale' => $filiale->setVisible(['id', 'nom_filiale'])
+            'filiale' => $results
         ]);
     }
 

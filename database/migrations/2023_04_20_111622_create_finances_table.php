@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('finances', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_entreprise');
+            $table->unsignedBigInteger('filiale_id');
             $table->string('activite');
             $table->string('type_activite');
-            $table->date('date_act');
+            $table->date('date_activite');
             $table->string('compte_scf');
             $table->integer('privision');
             $table->integer('realisation');
-            $table->foreign('id_entreprise')->references('id')->on('entreprises')->onDelete('CASCADE');
             $table->timestamps();
+            $table->foreign('filiale_id')->references('id')->on('filiales')->onDelete('CASCADE');
         });
     }
 

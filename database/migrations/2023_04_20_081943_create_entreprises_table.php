@@ -17,7 +17,10 @@ return new class extends Migration
             $table->string('groupe');
             $table->string('secteur');
             $table->string('nationalite');
-            $table->foreignId('filiale_id')->constrained();
+            $table->string('adresse');
+            $table->string('num_tel_entr');
+            $table->string('adress_emil_entr');
+            $table->string('status_juridique');
             $table->timestamps();
         });
     }

@@ -4,38 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Finance;
-use App\Models\Filiale;
 use App\Models\Dette;
+use App\Models\Creance;
 
 class Entreprise extends Model
 {
-    protected $table = 'entreprises';
-    protected $primaryKey = 'id';
-    public $timestamps = false;
+    use HasFactory;
 
     protected $fillable = [
-        'id', 'nom_entreprise', 'groupe', 'secteur', 'nationalite', 'filiale_id'
+        "nom_entreprise", "groupe", "secteur", "nationalite", "adresse",
+        "num_tel_entr", "adress_emil_entr", "status_juridique"
     ];
 
-    public function filiale()
+    public function dettes_creditor()
     {
-        return $this->belongsTo(Filiale::class);
+        return $this->morphMany(Dette::class, 'creditor');
     }
 
-    public function dettes() 
+    public function dettes_debtor()
     {
-        return $this->belongsToMany(Dette::class);
+        return $this->morphMany(Dette::class, 'debtor');
     }
 
-    public function creances() 
+    public function creances_creditor()
     {
-        return $this->belongsToMany(Creance::class);
+        return $this->morphMany(Creance::class, 'creditor');
     }
 
-    public function finace()
+    public function creances_debtor()
     {
-        return $this->hasOne(Finance::class);
+        return $this->morphMany(Creance::class, 'debtor');
     }
-
 }

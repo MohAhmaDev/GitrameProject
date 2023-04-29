@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Finance;
+use App\Models\Stagiare;
 
 class Filiale extends Model
 {
@@ -15,9 +17,9 @@ class Filiale extends Model
         return $this->hasMany(Employe::class);
     }
 
-    public function entreprises()
+    public function stagiares()
     {
-        return $this->hasMany(Entreprise::class);
+        return $this->hasMany(Stagiare::class);
     }
 
     public function users()
@@ -25,14 +27,20 @@ class Filiale extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function dettes() 
+    public function finances()
     {
-        return $this->hasMany(Dette::class);
+        return $this->hasMany(Finance::class);
     }
 
-    public function stagiaires()
+    public function dettes_creditor()
     {
-        return $this->hasMany(Stagiaire::class);
+        return $this->morphMany(Dette::class, 'creditor');
     }
+
+    public function dettes_debtor()
+    {
+        return $this->morphMany(Dette::class, 'debtor');
+    }
+
 
 }

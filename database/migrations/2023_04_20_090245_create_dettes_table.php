@@ -13,20 +13,18 @@ return new class extends Migration
     {
         Schema::create('dettes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_entreprise');
-            $table->unsignedBigInteger('id_ent_debitrice');
-            $table->string('nom_ent_debitrice');
+            $table->unsignedBigInteger('creditor_id');
+            $table->string('creditor_type');
+            $table->unsignedBigInteger('debtor_id');
+            $table->string('debtor_type');
             $table->string('intitule_projet');
             $table->string('num_fact');
             $table->string('num_situation');
             $table->date('date_dettes');
-            $table->unsignedBigInteger('montant');
-            $table->unsignedBigInteger('filiale_id');
+            $table->integer('montant');
             $table->string('observations');
-            $table->foreign('id_entreprise')->references('id')->on('entreprises');
-            $table->foreign('id_ent_debitrice')->references('id')->on('entreprises');
-            $table->foreign('filiale_id')->references('id')->on('filiales');
             $table->timestamps();
+
         });
     }
 

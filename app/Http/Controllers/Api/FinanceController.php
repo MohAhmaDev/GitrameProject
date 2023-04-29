@@ -3,18 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Employe;
-use App\Http\Requests\StoreEmployeRequest;
-use App\Http\Requests\UpdateEmployeRequest;
+use App\Models\Finance;
+use App\Http\Requests\StoreFinanceRequest;
+use App\Http\Requests\UpdateFinanceRequest;
 use App\Models\Filiale;
-use App\Http\Resources\EmployeResource;
+use App\Http\Resources\FinanceResource;
 
-class EmployeController extends Controller
+class FinanceController extends Controller
 {
     /**
      * Display a listing of the resource.
-     * 
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index()
     {
@@ -23,29 +21,27 @@ class EmployeController extends Controller
 
 
         if ($role === "admin") {
-            $employe = Employe::all();
+            $finance = Finance::all();
         } 
         else {
             $id = $branch->id;
             if (!is_null($id)) {
                 $filiale = Filiale::findOrFail($id);
-                $employe = $filiale->employes;
+                $finance = $filiale->finances;
             } else {
                 return response([]);
             }
         }
-        return EmployeResource::collection($employe);
+        return FinanceResource::collection($finance);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreEmployeRequest $request)
+    public function store(StoreFinanceRequest $request)
     {
-
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
-
 
         $auth = ["admin", "editor"];
         if (!in_array($role, $auth)) {
@@ -53,7 +49,6 @@ class EmployeController extends Controller
         }
 
         $data = $request->validated();
-        $data['handicape'] = !empty($data['handicape']) ? $data['handicape'] : false;
 
         if ($role !== "admin") {
             if (!is_null($branch->id)) {
@@ -64,37 +59,35 @@ class EmployeController extends Controller
                 ], 422);                
             }
         }
-
-
-
-        $employe = Employe::create($data);
-        return new EmployeResource($employe);
+        $finance = Finance::create($data);
+        return new FinanceResource($finance);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Employe $employe)
+    public function show(Finance $finance)
     {
+
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
         if ($role !== "admin") {
-            if ($employe->filiale_id !== $branch->id) {
+            if ($finance->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
             }
         }
 
+        return new FinanceResource($finance);
 
-        return new EmployeResource($employe);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateEmployeRequest $request, Employe $employe)
+    public function update(UpdateFinanceRequest $request, Finance $finance)
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
@@ -106,7 +99,7 @@ class EmployeController extends Controller
         }
 
         if ($role !== "admin") {
-            if ($employe->filiale_id !== $branch->id) {
+            if ($finance->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
@@ -114,14 +107,14 @@ class EmployeController extends Controller
         }
 
         $data = $request->validated();
-        $employe->update($data);
-        return new EmployeResource($employe);
+        $finance->update($data);
+        return new FinanceResource($finance);    
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Employe $employe)
+    public function destroy(Finance $finance)
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first->id;
@@ -132,14 +125,14 @@ class EmployeController extends Controller
         }
 
         if ($role !== "admin") {
-            if ($employe->filiale_id !== $branch->id) {
+            if ($finance->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
             }
         }  
         
-        $employe->delete();
+        $finance->delete();
         return response()->json(['message' => 'Employee deleted successfully']);
     }
 }
