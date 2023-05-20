@@ -15,7 +15,7 @@ class Employe extends Model
     protected $fillable = [
         'nom', 'prenom', 'fonction', 'sexe', 'date_naissance', 'date_recrutement',
         'contract', 'temp_occuper', 'handicape', 'date_retraite', 'categ_sociopro',
-        'observation', 'filiale_id'
+        'position','observation', 'filiale_id'
     ];
 
     protected static function boot()

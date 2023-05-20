@@ -48,6 +48,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
+    public function admissions()
+    {
+        return $this->belongsToMany(Admission::class);
+    }  
 
     public function filiales()
     {

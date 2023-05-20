@@ -52,8 +52,19 @@ class EmployeController extends Controller
             abort(403, 'Unauthorized');
         }
 
+    
         $data = $request->validated();
         $data['handicape'] = !empty($data['handicape']) ? $data['handicape'] : false;
+        if (($data['position'] === "retraiter") and ($data['date_retraite'] === null)) 
+        {
+            return response([
+                'message' => "le champ date retaiter est vide"
+            ], 422);                
+        }
+
+        if ($data['position'] === 'non retraiter') {
+            $data['date_retraite'] = null;
+        }
 
         if ($role !== "admin") {
             if (!is_null($branch->id)) {
@@ -105,6 +116,7 @@ class EmployeController extends Controller
             abort(403, 'Unauthorized');
         }
 
+
         if ($role !== "admin") {
             if ($employe->filiale_id !== $branch->id) {
                 return response([
@@ -114,6 +126,15 @@ class EmployeController extends Controller
         }
 
         $data = $request->validated();
+
+        if (($data["position"] === "retraiter") and ($data['date_retraite'] === null)) 
+        {
+            return response([
+                'message' => "le champ date retaiter est vide"
+            ], 422);                
+        }
+
+
         $employe->update($data);
         return new EmployeResource($employe);
     }

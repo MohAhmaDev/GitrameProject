@@ -22,6 +22,11 @@ class UserResource extends JsonResource
         $filiale = $this->filiales()->first();
         $filiale_id = $filiale ? $filiale->id : null;
         $filiale_name = $filiale ? $filiale->nom_filiale : "non";
+
+        $admission = $this->admissions()->first();
+        $admission_id = $admission ? $admission->id : null;
+        $admission_table = $admission ? $admission->table : "non";
+
         
         return [
             'id' => $this->id,
@@ -29,7 +34,8 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'role' => $roleName,
-            'filiale' => ["id" => $filiale_id, "name" => $filiale_name]
+            'filiale' => ["id" => $filiale_id, "name" => $filiale_name],
+            'admission' => ["id" => $admission_id, "table" => $admission_table]
         ];
     }
 

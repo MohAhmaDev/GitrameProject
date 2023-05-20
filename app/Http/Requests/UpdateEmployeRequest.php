@@ -33,7 +33,7 @@ class UpdateEmployeRequest extends FormRequest
             ],
             "date_naissance" => ['required','date','after:1960-01-01', 'before:2005-01-01'],
             "date_recrutement" => ['required','date','after:2016-01-01', 'before:2023-04-08'],
-            "date_retraite" => ['required','date','after:2016-01-01'],
+            "date_retraite" => ['nullable','date','after:2016-01-01'],
             "contract" => [
                 'required',
                 'string',
@@ -49,6 +49,11 @@ class UpdateEmployeRequest extends FormRequest
                 'string',
             ],
             "handicape" => 'boolean', 
+            "position" => [
+                'required',
+                'string',
+                Rule::in(['non retraiter', 'retraiter'])
+            ],
             "observation" => ['string', 'required'],
             "observation" => 'prohibited'           
         ];

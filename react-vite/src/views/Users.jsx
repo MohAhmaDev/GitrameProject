@@ -43,8 +43,9 @@ export default function Users() {
           <tr>
             <th>Filiale</th>
             <th>Name</th>
-            <th>access</th>
+            <th>role</th>
             <th>Create Date</th>
+            <th> access </th>
             <th>Actions</th>
           </tr>
           </thead>
@@ -66,6 +67,7 @@ export default function Users() {
                 <td>{u.name}</td>
                 <td>{!u.role ? "no role assigned" : u.role}</td>
                 <td>{u.created_at}</td>
+                <td> TB-{u.admission?.table} </td>
                 <td>
                   {(role && role === "admin") ? <Link className="btn-edit" to={'/users/' + u.id}>Edit</Link> : "no action"}
                   &nbsp;
@@ -76,8 +78,6 @@ export default function Users() {
             </tbody>
           }
         </table>
-        {(role === "admin" && !loading) && 
-        <Link to="/entreprise/add"> <Button sx={{ margin: "20px" }} variant='contained'> ajouter une entreprise </Button> </Link>}
       </div>
     </div>
   )

@@ -25,6 +25,8 @@ class EntrepriseController extends Controller
         return response([
             'entreprise' => $results
         ]);
+
+
     }
 
     public function store(Request $request) 

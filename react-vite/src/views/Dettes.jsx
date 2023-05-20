@@ -4,7 +4,7 @@ import axiosClient from '../axios-client'
 import { useStateContext } from '../contexts/ContextProvider'
 import Table from './MUI/Table';
 import { useFormsContext } from '../contexts/FormsContext';
-import { IconButton } from '@mui/material';
+import { IconButton, Button } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 
 
@@ -104,7 +104,9 @@ const Dettes = () => {
                         </div>
                     </div>
                 </div>
-            }    
+            } 
+            {(role === "admin" && !loading) && 
+              <Link to="/entreprise/add"> <Button sx={{ margin: "20px" }} variant='contained'> ajouter une entreprise </Button> </Link>}   
         </div>
     );
 };

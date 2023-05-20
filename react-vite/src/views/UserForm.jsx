@@ -26,12 +26,12 @@ export default function UserForm() {
   const {id} = useParams()
   const [additing, setAdditing] = useState(false)
   const [addFiliale, setAddFiliale] = useState(false)
-  const [loading, setLoading] = useState(true)
 
   const { setNotification} = useStateContext()
-  const {filiales, getFiliales, roles, getRoles} = useDisplayContext();
+  const {filiales, getFiliales, roles, getRoles, loading, setLoading} = useDisplayContext();
   const navigate = useNavigate();
   const location = useLocation();
+  // const [loading, setLoading] = useState(true)
 
 
 
@@ -55,7 +55,7 @@ export default function UserForm() {
     } 
     if (location.pathname.startsWith('/users/new')) {
       console.log("loading")
-      setLoading(false);
+      setLoading(true);
     }    
   }, [])
 
@@ -165,7 +165,7 @@ export default function UserForm() {
     }
   }
 
-  console.log(Object.keys(user) === 0)
+  console.log(loading)
   return (
     <>
       {id && <h1> Update user: {user.name} </h1>}
@@ -189,7 +189,7 @@ export default function UserForm() {
             <input onChange={ev => setUser({...user, email: ev.target.value})}  value={user.email} type="email" placeholder='Email' />
             <input onChange={ev => setUser({...user, password: ev.target.value})}  type="password" placeholder='Password' />
             <input onChange={ev => setUser({...user, password_confirmation: ev.target.value})}  type="password" placeholder='Password Confirmation'/>
-            <button className='btn' disabled={!role}> Save </button>
+            <button className='btn' disabled={!(role && !addFiliale)}> Save </button>
           </form>
           }
       </div>}
@@ -226,7 +226,7 @@ export default function UserForm() {
           </form>
         </div>
       }
-      {(!(role && !addFiliale) && loading) && <Box style={{
+      {(!(role && !addFiliale) && !loading) && <Box style={{
         width: "100%",
         height: "150px",
         display: "flex",
@@ -263,8 +263,9 @@ export default function UserForm() {
             </Box>
           </Box>
         </form>
-      </div>} 
-      {(!(filiale || addFiliale) && loading) && <Box style={{
+      </div>
+      } 
+      {(!(filiale || addFiliale) && !loading) && <Box style={{
           width: "100%",
           height: "150px",
           display: "flex",

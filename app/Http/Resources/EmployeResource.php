@@ -33,6 +33,7 @@ class EmployeResource extends JsonResource
             'categ_sociopro' => $this->categ_sociopro,
             'observation' => $observation,
             'filiale_id' => $this->filiale_id,
+            'position' => $this->position,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),  
         ];
 

@@ -47,11 +47,11 @@ export default function DefaultLayout() {
             <aside>
                 <Link to='dashboard'> Dashboard </Link>
                 <Link to='/users'> Users </Link>
-                <Link to='/employes'> List of Employes </Link>
-                <Link to='/dettes'> Dette des entreprises </Link>
-                <Link to='/finances'> List of Finances </Link>
-                <Link to='/creances'> List of creances </Link>
-                <Link to='/stagiares'> List of Stagiares </Link>
+                <Link to='/employes'> Listes de Employes </Link>
+                <Link to='/dettes'> Listes des Dettes </Link>
+                <Link to='/finances'> Listes des Finances </Link>
+                <Link to='/creances'> Listes des creances </Link>
+                <Link to='/stagiares'> Listes des Stagiares </Link>
             </aside>
             <div className='content'> 
                 <header>

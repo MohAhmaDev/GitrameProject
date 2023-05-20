@@ -36,6 +36,7 @@ export default function EmployeForm() {
     prenom: '',
     fonction: '',
     sexe: '',
+    position: '',
     date_naissance: undefined,
     date_recrutement: undefined,
     date_retraite: undefined,
@@ -55,9 +56,10 @@ export default function EmployeForm() {
     prenom: yup.string().required("le champ prenom est obligatoire"),
     fonction: yup.string().required("le champ fonction est obligatoire"),
     sexe: yup.string().required("ce champ est obligatoire"),
+    position: yup.string().required("ce champ est obligatoire"),
     date_naissance: yup.date().required("le champs date de naissance est obligatoire"),
     date_recrutement: yup.date().required('le champ date de recrutement est obligatoire'),
-    date_retraite: yup.date().required('le champ date de retraite est obligatoire'),
+    // date_retraite: yup.date().required('le champ date de retraite est obligatoire'),
     temp_occuper: yup.string().required('ce champ est obligatoire'),
     contract: yup.string().required('le champs contract est obligatoire'),
     categ_sociopro: yup.string().required('veillez ajouter une valeur a ce champs'),
@@ -72,6 +74,7 @@ export default function EmployeForm() {
   const {isSubmitting, isValid, isSubmitted, isSubmitSuccessful} = formState                   
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const navigate = useNavigate();
+  const [visibale, setVisible] = useState(true);
   const [loading, setLoading] = useState(false);
 
 
@@ -85,14 +88,15 @@ export default function EmployeForm() {
         prenom: data.prenom,
         fonction: data.fonction,
         sexe: data.sexe,
+        position: data.position,
         date_naissance: dayjs(data.date_naissance).format("YYYY-MM-DD"),
         date_recrutement: dayjs(data.date_recrutement).format("YYYY-MM-DD"),
         contract: data.contract,
         temp_occuper: data.temp_occuper,
         handicape: data.handicape === null ? true : data.handicape,
         categ_sociopro: data.categ_sociopro,
-        date_retraite: dayjs(data.date_retraite).format("YYYY-MM-DD"),
-        filiale_id: filiale.id ? filiale.id : data.filiale,
+        date_retraite: data.position === null ? dayjs(data.date_retraite).format("YYYY-MM-DD") : null,
+        filiale_id: filiale.id ? filiale.id : data.filiale_id,
       }
       axiosClient.put(`/employes/${employe.id}`, updateEmploye)
       .then(() => {
@@ -102,6 +106,7 @@ export default function EmployeForm() {
       })
       .catch(err => {
         const response = err.response;
+        console.log(err)
         if (response && response.status === 422) {
           setError('server', {
             message: response?.data.errors
@@ -116,15 +121,16 @@ export default function EmployeForm() {
         prenom: data.prenom,
         fonction: data.fonction,
         sexe: data.sexe,
+        position: data.position,
         date_naissance: dayjs(data.date_naissance).format("YYYY-MM-DD"),
         date_recrutement: dayjs(data.date_recrutement).format("YYYY-MM-DD"),
         contract: data.contract,
         temp_occuper: data.temp_occuper,
         handicape: data.handicape,
         categ_sociopro: data.categ_sociopro,
-        date_retraite: dayjs(data.date_retraite).format("YYYY-MM-DD"),
+        date_retraite: data.date_retraite !== null ? dayjs(data.date_retraite).format("YYYY-MM-DD") : null,
         observation: data.observation,
-        filiale_id: filiale.id ? filiale.id : data.filiale,
+        filiale_id: filiale.id ? filiale.id : data.filiale_id,
       }
       axiosClient.post('/employes', Add_employe)
       .then(() => {
@@ -141,8 +147,17 @@ export default function EmployeForm() {
         }
       })
     }
+    console.log("data: ", data)
   }
 
+
+  const disableDate = (e) => {
+    if (e === "retraiter")  {
+      setVisible(false)
+    } else {
+      setVisible(true)
+    }
+  }
 
   const getEmploye = () => {
     setLoading(true)
@@ -154,9 +169,10 @@ export default function EmployeForm() {
         prenom: data.data.prenom,
         fonction: data.data.fonction,
         sexe: data.data.sexe,
+        position: data.data.position,
         date_naissance: dayjs(data.data.date_naissance),
         date_recrutement: dayjs(data.data.date_recrutement),
-        date_retraite: dayjs(data.data.date_retraite),
+        date_retraite: data.data.date_retraite === null ? undefined : dayjs(data.data.date_retraite),
         contract: data.data.contract,
         temp_occuper: data.data.temp_occuper,
         handicape: data.data.handicape === 1 ? true : false,    
@@ -167,6 +183,8 @@ export default function EmployeForm() {
       })
       reset({...data.data})
       setLoading(false)
+      disableDate(data.data.position)
+
     })
     .catch((err) => {
       console.log(err)
@@ -184,6 +202,7 @@ export default function EmployeForm() {
     getFiliales()
     fetchUser()
   }, [])
+
 
 
   return (
@@ -222,11 +241,11 @@ export default function EmployeForm() {
 
             <TextField
               label="Fonction"
+              {...register("fonction")}
               value={employe.fonction}
               variant="outlined"
               sx={{ gridColumn: "span 2" }}
               onChange={ev => setEmploye({...employe, fonction: ev.target.value})}
-              {...register("fonction")}
               error={errors.fonction ? true : false}
               helperText={errors.fonction && errors.fonction?.message}
             />
@@ -255,45 +274,32 @@ export default function EmployeForm() {
                 </LocalizationProvider>
               )}
             />
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                defaultValue={undefined}
-                label={"date_recrutement"}
-                {...register('date_recrutement')}
-                value={employe.date_recrutement}
-                sx={{ gridColumn: "span 2" }}
-                format="DD/MM/YYYY"
-                onChange={(event) => { 
-                  setEmploye({...employe, date_recrutement: event})
-                }}
-                slotProps={{
-                  textField: {
-                    error: errors.date_recrutement ? true : false,
-                    helperText: errors.date_recrutement?.message 
-                  }
-                }}
-              />
-            </LocalizationProvider>
 
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                defaultValue={undefined}
-                label={"date de retraite"}
-                {...register('date_retraite')}
-                value={employe.date_retraite}
-                sx={{ gridColumn: "span 2" }}
-                onChange={(event) => { 
-                  setEmploye({...employe, date_retraite: event})
-                }}
-                format="DD/MM/YYYY"
-                slotProps={{
-                  textField: {
-                    error: errors.date_retraite ? true : false,
-                    helperText: errors.date_retraite?.message 
-                  }
-                }}
-              />
-            </LocalizationProvider>
+            <Controller
+              control={control}
+              name="date_recrutement"
+              render={({ field: { onChange } }) => (
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label={"date de recrutement"} 
+                    sx={{ gridColumn: "span 2" }}
+                    format="DD/MM/YYYY"
+                    value={employe?.date_recrutement}
+                    onChange={(event) => {  
+                      onChange(event)
+                      setEmploye({...employe, date_recrutement: event})
+                    }}
+                    slotProps={{
+                      textField: {
+                        error: errors.date_recrutement ? true : false,
+                        helperText: errors.date_recrutement?.message 
+                      }
+                    }}
+                  />
+                </LocalizationProvider>
+              )}
+            />
+
 
             <FormControl variant="outlined" 
               sx={{ gridColumn: "span 2" }}>
@@ -314,6 +320,29 @@ export default function EmployeForm() {
                 textAlign: "left",
                 fontWeight: "400"
               }}> {errors.sexe?.message} </span>}
+            </FormControl>
+
+            <FormControl variant="outlined" 
+              sx={{ gridColumn: "span 2" }}>
+              <InputLabel id="demo-simple-select-label"> Position de l'employe </InputLabel>
+              <Select
+                label="Position de l'employe"
+                value={employe.position}
+                {...register("position")}
+                onChange={(event) => { setEmploye({...employe, position: event?.target?.value});
+                  disableDate(event?.target?.value)
+                }}
+                error={errors.position ? true : false}
+              >
+                <MenuItem value="non retraiter"> non retraiter </MenuItem>
+                <MenuItem value="retraiter"> retraiter </MenuItem>
+              </Select>
+              {errors.position && <span style={{
+                color: "#d32f2f",
+                fontSize: "0.75em",
+                textAlign: "left",
+                fontWeight: "400"
+              }}> {errors.position?.message} </span>}
             </FormControl>
 
             <FormControl variant="outlined" 
@@ -404,6 +433,25 @@ export default function EmployeForm() {
               }}> {errors.handicape?.message} </span>}
             </RadioGroup>
 
+            <Controller
+              control={control}
+              name="date_retraite"
+              render={({ field: { onChange } }) => (
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    disabled={visibale}
+                    label={"date de retraite"} 
+                    sx={{ gridColumn: "span 2" }}
+                    format="DD/MM/YYYY"
+                    value={employe?.date_retraite}
+                    onChange={(event) => {  
+                      onChange(event)
+                      setEmploye({...employe, date_retraite: event})
+                    }}
+                  />
+                </LocalizationProvider>
+              )}
+            />
             {(role === 'admin') && 
             <FormControl variant="outlined" sx={{ width: "300px" }}>
               { <InputLabel id="demo-simple-select-label"> filiale  </InputLabel>}
@@ -418,8 +466,10 @@ export default function EmployeForm() {
                   <MenuItem value={filiale.id} key={filiale.id}> {filiale.name} </MenuItem>
                 ))}
               </Select>
-            </FormControl>
-            }      
+            </FormControl>} 
+
+
+                 
             </Box>   
             <Box display="flex" justifyContent="end" mt="20px">
               <Button  type="submit" color="success" variant="contained">

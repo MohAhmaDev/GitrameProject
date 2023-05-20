@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CreanceController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DetteController;
 use App\Http\Controllers\Api\EmployeController;
 use App\Http\Controllers\Api\EntrepriseController;
@@ -42,6 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('/finances', FinanceController::class);
     Route::apiResource('/dettes', DetteController::class);
     Route::apiResource('/creances', CreanceController::class);
+    Route::get('/dash', [DashboardController::class, 'get_Employes_dash']);
+    Route::get('/dash-line', [DashboardController::class, 'get_FFinances']);
+    Route::get('/dash-ca', [DashboardController::class, 'get_ca']);
 });
 
 Route::post('/signup', [AuthController::class, 'signup']);
