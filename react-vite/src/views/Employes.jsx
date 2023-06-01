@@ -39,7 +39,16 @@ export default function Employe() {
       getEmployes()
     })
   }
-  
+  const edit = role !== "editor" ? null : {
+    field: "edit",
+    headerName: "Edit",
+    flex: 0.5,
+    renderCell: (params) => (
+      <IconButton onClick={() => handleEditRow(params.row)}>
+        <EditOutlinedIcon />
+      </IconButton>
+    ),
+  } 
   const columns = [
     { field: "id", headerName: "ID", flex: 0.5 },
     { field: "numero_securite_social", headerName: "NSS", flex: 0.5 },
@@ -51,17 +60,11 @@ export default function Employe() {
     { field: "contract", headerName: "contract", flex: 0.5},
     { field: "handicape", headerName: "handicape", flex: 0.5},
     { field: "sexe", headerName: "sexe", flex: 1},
-    {
-      field: "edit",
-      headerName: "Edit",
-      flex: 0.5,
-      renderCell: (params) => (
-        <IconButton onClick={() => handleEditRow(params.row)}>
-          <EditOutlinedIcon />
-        </IconButton>
-      ),
-    },
   ]
+
+  if (edit !== null) {
+    columns.push(edit);
+  }
 
 
   useEffect(() => {

@@ -200,18 +200,38 @@ table > tbody > tr > td {
     padding: 1rem
 }
 
-#defaultLayout aside > a {
+#defaultLayout aside > span {
     display: block;
     padding: 0.75rem 1rem;
     border-radius: 6px;
     color: white;
     text-decoration: none;
     transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
 }
 
-#defaultLayout aside > a:hover {
+#defaultLayout aside > a {
+    display: block;
+    padding: 0.7rem 1.5rem;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: none;
+    opacity: 0;
+}
+
+#defaultLayout aside > a.active {
+    transition: 0.5s;
+    display: block;
+    opacity: 1;
+}
+#defaultLayout aside > a:hover, span:hover {
     background-color: rgba(0, 0, 0, 0.2);
 }
+
 
 #defaultLayout .content {
     flex: 1;

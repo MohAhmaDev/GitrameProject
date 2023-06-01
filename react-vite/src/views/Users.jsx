@@ -9,7 +9,7 @@ import { Button, CircularProgress } from '@mui/material';
 
 export default function Users() {
 
-  const {user, fetchUser, role, filiale, setNotification} = useStateContext()
+  const {user, fetchUser, role, admission, filiale, setNotification} = useStateContext()
   const {users, loading, getUsers} = useDisplayContext()
 
 
@@ -31,6 +31,7 @@ export default function Users() {
   }, [])
 
 
+  console.log(admission);
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -60,7 +61,7 @@ export default function Users() {
           }
           {!loading && 
             <tbody>
-            {users.map(u => (
+            {(users !== null && users !== undefined && Object.keys(users).length !== 0) && users?.map(u => (
               <tr key={u.id}>
                 <td>{!u.filiale?.id ? <Link to={`/users/filiale/${u.id}`}> ajouter </Link> 
                 : u.filiale?.name}</td>

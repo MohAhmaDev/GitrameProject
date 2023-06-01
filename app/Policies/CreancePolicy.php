@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\Employe;
+use App\Models\Creance;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class EmployePolicy
+class CreancePolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -19,14 +19,14 @@ class EmployePolicy
             return true;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A1";
-        }
+            return $permission === "A3";
+        }    
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Employe $employe): bool
+    public function view(User $user, Creance $creance): bool
     {
         $role = $user->roles()->first()->name;
 
@@ -34,8 +34,8 @@ class EmployePolicy
             return true;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A1";
-        }
+            return $permission === "A3";
+        }    
     }
 
     /**
@@ -50,14 +50,14 @@ class EmployePolicy
             return false;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A1";
-        }    
+            return $permission === "A3";
+        } 
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Employe $employe): bool
+    public function update(User $user, Creance $creance): bool
     {
         $role = $user->roles()->first()->name;
         $auth = ["admin", "basic"];
@@ -66,14 +66,14 @@ class EmployePolicy
             return false;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A1";
-        }    
+            return $permission === "A3";
+        } 
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Employe $employe): bool
+    public function delete(User $user, Creance $creance): bool
     {
         $role = $user->roles()->first()->name;
         $auth = ["admin", "basic"];
@@ -82,14 +82,14 @@ class EmployePolicy
             return false;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A1";
-        }    
+            return $permission === "A3";
+        } 
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Employe $employe): bool
+    public function restore(User $user, Creance $creance): bool
     {
         return false;
     }
@@ -97,7 +97,7 @@ class EmployePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Employe $employe): bool
+    public function forceDelete(User $user, Creance $creance): bool
     {
         return false;
     }

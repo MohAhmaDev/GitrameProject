@@ -9,6 +9,7 @@ const StateContext = createContext({
     creances: null,
     entreprises: null,
     stagiare: null,
+    formations: null,
     loading: null,
     setEmployes: () => {},
     setFinances: () => {},
@@ -16,6 +17,7 @@ const StateContext = createContext({
     setCreances: () => {},
     setEntreprises: () => {},
     setStagiare: () => {},
+    setFormations: () => {},
     setLoading: () => {},
     getEmployes: () => {},
     getFinances: () => {},
@@ -23,6 +25,7 @@ const StateContext = createContext({
     getCreances: () => {},
     getEntreprises: () => {},
     getStagiares: () => {},
+    getFormations: () => {},
 })
 
 
@@ -31,6 +34,7 @@ export const FormsContext = ({children}) => {
     const [loading, setLoading] = useState(true);
     const [employes, setEmployes] = useState();
     const [stagiare, setStagiare] = useState();
+    const [formations, setFormations] = useState({});
     const [finances, setFinances] = useState({})
     const [dettes, setDettes] = useState({})
     const [creances, setCreances] = useState({})
@@ -46,6 +50,7 @@ export const FormsContext = ({children}) => {
         })
         .catch((err) => {
           setLoading(false)
+          console.log(err)
         })
     }
 
@@ -61,6 +66,17 @@ export const FormsContext = ({children}) => {
       })
   }
 
+  const getFormations = () => {
+    setLoading(true)
+    axiosClient.get(`/formations`)
+    .then(({ data }) => {
+      setFormations(data.data)
+      setLoading(false)
+    })
+    .catch((err) => {
+      setLoading(false)
+    })
+}
 
     
     const getFinances = () => {
@@ -121,19 +137,22 @@ export const FormsContext = ({children}) => {
             creances,
             entreprises,
             stagiare,
+            formations,
             loading,
             setEmployes,
             setFinances,
             setDettes,
             setEntreprises,
             setStagiare,
+            setFormations,
             setLoading,
             getEmployes,
             getFinances,
             getDettes,
             getCreances,
             getEntreprises,
-            getStagiares
+            getStagiares,
+            getFormations
         }}>
             {children}
         </StateContext.Provider>

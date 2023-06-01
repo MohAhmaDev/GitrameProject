@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Admission;
+use App\Models\Filiale;
 use App\Models\User;
 use App\Models\Role;
 
@@ -39,10 +41,27 @@ class UserController extends Controller
         
         $data = $request->validated();
         $data['password'] = bcrypt($data['password']);
-        $user = User::create($data);
+        
+        $user_data = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password']
+        ];
 
-        $basicRole = Role::where('name', 'basic')->firstOrFail();
-        $user->roles()->attach($basicRole->id);
+        $user_role = $data['role'];
+        $user_filiale = $data['filiale'];
+        $user_admission = $data['admission'];
+
+
+
+        $role = Role::where('name', $user_role)->firstOrFail();
+        $filiale = Filiale::findOrFail($user_filiale);
+        $admission = Admission::findOrFail($user_admission);
+
+        $user = User::create($user_data);
+        $user->roles()->attach($role);
+        $user->filiales()->attach($filiale);
+        $user->admissions()->attach($admission);
 
         return response(new UserResource($user) , 201);
     }

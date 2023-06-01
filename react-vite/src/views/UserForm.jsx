@@ -14,6 +14,7 @@ import {
 
 import { useForm, Controller } from 'react-hook-form'
 import { useDisplayContext } from '../contexts/DisplayContext'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 
 export default function UserForm() {
@@ -32,6 +33,7 @@ export default function UserForm() {
   const navigate = useNavigate();
   const location = useLocation();
   // const [loading, setLoading] = useState(true)
+
 
 
 

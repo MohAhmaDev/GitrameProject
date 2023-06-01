@@ -5,7 +5,10 @@ import Users from './views/Users';
 import Signup from './views/Signup';
 import DefaultLayout from './components/DefaultLayout';
 import GuestLayout from './components/GuestLayout';
-import Dashboard from './views/Dashboard';
+import Dashboard from './views/Dashboard/Dashboard';
+import Dashboard01 from './views/Dashboard/Dashboard01';
+import Dashboard02 from './views/Dashboard/Dashboard02';
+import Dashboard03 from './views/Dashboard/Dashboard03';
 import UserForm from './views/UserForm';
 import Employes from './views/Employes';
 import EmployesForm from './views/EmployesForm'
@@ -20,6 +23,9 @@ import CreancesForm from './views/CreancesForm';
 import EntreprisesForm from './views/EntreprisesForm'
 import Stagiares from './views/Stagiares';
 import StagiaresForm from './views/StagiaresForm'
+import Formation from './views/Formations';
+import FormationForm from './views/FormationForm'
+import UserTest from './views/UserTest';
 
 
 const router = createBrowserRouter([
@@ -39,7 +45,7 @@ const router = createBrowserRouter([
             },
             {
                 path: '/users/new',
-                element: <UserForm key="userCreate"/>
+                element: <UserTest key="userCreate"/>
             },
             {
                 path: '/users/:id',
@@ -110,12 +116,36 @@ const router = createBrowserRouter([
                 element:  <PrivateRoute redirectpath='/stagiares'> <StagiaresForm key="stagiare_Update" /> </PrivateRoute>
             },
             {
+                path: '/formations',
+                element: <Formation />
+            },
+            {
+                path: '/formations/new',
+                element: <PrivateRoute redirectpath='/formations'> <FormationForm key="stagiare_Create"/> </PrivateRoute>
+            },
+            {
+                path: '/formations/:id',
+                element:  <PrivateRoute redirectpath='/formations'> <FormationForm key="stagiare_Update" /> </PrivateRoute>
+            },
+            {
                 path: '/entreprise/add',
                 element: <PrivateRoute redirectpath='/'> <EntreprisesForm /> </PrivateRoute>,
             },
             {
                 path: '/dashboard',
                 element: <Dashboard />
+            },
+            {
+                path: '/dashboard/RHS',
+                element: <Dashboard01 />
+            },
+            {
+                path: '/dashboard/Finance',
+                element: <Dashboard02 />
+            },
+            {
+                path: '/dashboard/Dette_Creances',
+                element: <Dashboard03 />
             }
         ]
     },

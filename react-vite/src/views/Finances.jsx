@@ -39,6 +39,16 @@ const Finances = () => {
         })
       }
 
+    const edit = role !== "editor" ? null : {
+      field: "edit",
+      headerName: "Edit",
+      flex: 0.5,
+      renderCell: (params) => (
+        <IconButton onClick={() => handleEditRow(params.row)}>
+          <EditOutlinedIcon />
+        </IconButton>
+      ),
+    }
     const columns = [
         { field: "id", headerName: "ID", flex: 0.5 },
         { field: "type_activite", headerName: "Type d'activité", flex: 0.5 },
@@ -48,18 +58,11 @@ const Finances = () => {
         { field: "date_activite", headerName: "Date Activité", flex: 0.5},
         { field: "privision", headerName: "privision", flex: 0.5},
         { field: "compte_scf", headerName: "Compte Scf", flex: 0.5},
-        {
-            field: "edit",
-            headerName: "Edit",
-            flex: 0.5,
-            renderCell: (params) => (
-              <IconButton onClick={() => handleEditRow(params.row)}>
-                <EditOutlinedIcon />
-              </IconButton>
-            ),
-        },
     ]
 
+    if (edit !== null) {
+      columns.push(edit);
+    }
    
     
     useEffect(() => {

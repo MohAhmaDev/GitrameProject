@@ -34,5 +34,10 @@ class Employe extends Model
         return $this->belongsTo(Filiale::class);
     }
 
+    public function formations() 
+    {
+        return $this->hasMany(Formation::class);
+    }
+
     
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Filiale;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class FilialeController extends Controller
 {
@@ -69,7 +70,36 @@ class FilialeController extends Controller
 
         $user->filiales()->sync($filiale);
         return response()->json(['message' => 'Filiale update successfully']);
+    }
 
+    public function get_agregat($type_agregat)  
+    {
+        $agregets = DB::table('dagregats')
+        ->selectRaw('agregats, ID_Agregats')
+        ->where('Type_Agregats', '=', $type_agregat)
+        ->get();
+    
+        $results = $agregets->map(function ($agreget) {
+            return [
+                'id' => $agreget->ID_Agregats,
+                'name' => $agreget->agregats
+            ];
+        });
+    
+        return response([
+            'agreget' => $results
+        ]);
+
+    }
+
+    public function get_years() {
+
+        $years = DB::table('finances')
+        ->select(DB::raw("DISTINCT(DATE_FORMAT(finances.date_activite, '%Y')) as year"))
+        ->orderBy(DB::raw("(DATE_FORMAT(finances.date_activite, '%Y'))"), 'ASC')
+        ->get();
+    
+        return response($years);
     }
 
 }

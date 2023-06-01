@@ -8,6 +8,7 @@ const StateContext = createContext({
     token: null,
     filiale: null, 
     role: null,
+    admission: null,
     notification: null,
     loading: null,
     setUser: () => {},
@@ -15,6 +16,7 @@ const StateContext = createContext({
     setRole: () => {},
     setToken: () => {},
     setLoading: () => {},
+    setAdmission: () => {},
     setNotification: () => {},
     fetchUser: () => {},
 })
@@ -26,6 +28,7 @@ export const ContextProvider = ({children}) => {
     const [filiale, setFiliale] = useState(null);
     const [role, setRole] = useState("");
     const [loading, setLoading] = useState(false);
+    const [admission, setAdmission] = useState(null);
     const [notification, _setNotification] = useState('');
     const [token, _setToken] = useState(localStorage.getItem('ACCESS_TOKEN'));
 
@@ -52,6 +55,7 @@ export const ContextProvider = ({children}) => {
           setUser(data.user)
           setRole(data.role)
           setFiliale(data.filiale)
+          setAdmission(data.admission)
         } catch (err) {
           console.log(err)
         }
@@ -67,12 +71,14 @@ export const ContextProvider = ({children}) => {
             filiale,
             role,
             loading,
+            admission,
             notification,
             setUser,
             setToken,
             setFiliale,
             setRole,
             setLoading,
+            setAdmission,
             setNotification,
             fetchUser: fetchUser,
         }}>

@@ -140,6 +140,7 @@ export default function StagiaresForm() {
     axiosClient.get(`stagiares/${id}`)
     .then(({data}) => {
       setStagiare({
+        id: id,
         nom: data.data.nom,
         prenom: data.data.prenom,
         domaine_formation: data.data.domaine_formation,

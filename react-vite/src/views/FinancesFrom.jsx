@@ -47,6 +47,22 @@ const FinancesFrom = () => {
     const [loading, setLoading] = useState(false);
 
 
+    const [checked, setChecked] = useState(false);
+    const [agregats, setAgregats] = useState({})
+    
+    const handleChange = (e) => {
+        setChecked(true);
+        getAgregat(e);
+    }
+
+    const getAgregat = (type_agregat) => {
+        axiosClient.get(`/agregat/${type_agregat}`).then(({data}) => {
+          setAgregats(data.agreget)
+        }).catch((error) => {
+          console.log(error)
+        })
+    }
+
 
 
     const userScheme = yup.object({
@@ -65,6 +81,33 @@ const FinancesFrom = () => {
         });
     const {isSubmitting, isValid, isSubmitted, isSubmitSuccessful} = formState    
 
+    const agregat = (
+        <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="30px" > 
+            <label style={{ gridColumn: "span 1" }}> Finace : (ajouter l'Agregat) </label>
+            <FormControl 
+                variant="outlined" 
+                sx={{ gridColumn: "span 2"}}
+                >
+                <InputLabel> Agregat </InputLabel>
+                <Select
+                    {...register('activite')}
+                    value={finance.activite}
+                    onChange={ev => setFinance({...finance, activite: ev.target.value})}
+                    label="Agregat"
+                >
+                {(checked && (Object.keys(agregats).length !== 0)) && agregats?.map(agregat => (
+                    <MenuItem value={agregat.name} key={agregat.id}> {agregat.name} </MenuItem>
+                ))}
+                </Select>
+                {errors.activite && <span style={{
+                    color: "#d32f2f",
+                    fontSize: "0.75em",
+                    textAlign: "left",
+                    fontWeight: "400"
+                }}> {errors.activite.message} </span>}
+            </FormControl>
+        </Box>
+      );
 
     useEffect(() => {
         getFiliales()
@@ -173,7 +216,10 @@ const FinancesFrom = () => {
                                 <Select
                                     label="type activite"
                                     {...register('type_activite')}
-                                    onChange={ev => setFinance({...finance, type_activite: ev.target.value})}
+                                    onChange={ev => {
+                                        handleChange(ev?.target.value)
+                                        setFinance({...finance, type_activite: ev.target.value})
+                                    }}
                                     value={finance.type_activite}
                                     error={errors.type_activite ? true : false}
                                 >
@@ -187,22 +233,14 @@ const FinancesFrom = () => {
                                         fontSize: "0.75em",
                                         textAlign: "left",
                                         fontWeight: "400"
-                                    }}> {errors.type_activite?.message} </span>}
+                                }}> {errors.type_activite?.message} </span>}
                             </FormControl>  
                         </Box>   
-                        <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="30px" > 
-                            <label style={{ gridColumn: "span 1" }}> Finace : (ajouter l'Agregat) </label>
-                            <TextField
-                                label="Agregat"
-                                variant="outlined"
-                                {...register('activite')}
-                                value={finance.activite}
-                                onChange={ev => setFinance({...finance, activite: ev.target.value})}
-                                error={errors.activite ? true : false}
-                                helperText={errors.activite && errors.activite.message}
-                                sx={{ gridColumn: "span 2" }}
-                            />
-                        </Box> 
+                        <Zoom
+                            in={checked} style={{ transitionDelay: checked ? '300ms' : '0ms' ,
+                            display: checked ? null : 'none'}}>
+                            {agregat}
+                        </Zoom>
                         <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="30px" > 
                             <label style={{ gridColumn: "span 1" }}> Finance : (ajouter compte csf) </label>
                             <TextField

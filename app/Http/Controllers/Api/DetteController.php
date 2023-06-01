@@ -12,6 +12,11 @@ use App\Models\Filiale;
 
 class DetteController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -19,6 +24,8 @@ class DetteController extends Controller
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
+
+        $this->authorize('viewAny', Dette::class);
 
         if ($role === "admin") {
             $dette = Dette::all();
@@ -56,6 +63,7 @@ class DetteController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
+        $this->authorize('create', Dette::class);
 
         $data = $request->validated();
         $creditor_type = $data['creditor_type']; 
@@ -101,7 +109,7 @@ class DetteController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
-        
+        $this->authorize('view', $dette);
         
         if ($role !== "admin") {
             if (($dette->debtor_id !== $branch->id) and ($dette->creditor_id !== $branch->id)) {
@@ -124,6 +132,7 @@ class DetteController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
+        $this->authorize('update', $dette);
 
         $auth = ["admin", "editor"];
         if (!in_array($role, $auth)) {
@@ -180,6 +189,8 @@ class DetteController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
+
+        $this->authorize('delete', $dette);
 
         if ($role !== "admin") {
             if (($dette->debtor_id !== $branch->id) and ($dette->creditor_id !== $branch->id)) {

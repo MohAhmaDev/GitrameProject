@@ -8,9 +8,15 @@ use App\Http\Requests\StoreEmployeRequest;
 use App\Http\Requests\UpdateEmployeRequest;
 use App\Models\Filiale;
 use App\Http\Resources\EmployeResource;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      * 
@@ -21,6 +27,8 @@ class EmployeController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
+
+        $this->authorize('viewAny', Employe::class);
 
         if ($role === "admin") {
             $employe = Employe::all();
@@ -33,6 +41,7 @@ class EmployeController extends Controller
             } else {
                 return response([]);
             }
+
         }
         return EmployeResource::collection($employe);
     }
@@ -51,6 +60,8 @@ class EmployeController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
+        $this->authorize('create', Employe::class);
+
 
     
         $data = $request->validated();
@@ -116,6 +127,8 @@ class EmployeController extends Controller
             abort(403, 'Unauthorized');
         }
 
+        $this->authorize('update', $employe);
+
 
         if ($role !== "admin") {
             if ($employe->filiale_id !== $branch->id) {
@@ -151,6 +164,9 @@ class EmployeController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
+
+        $this->authorize('delete', $employe);
+
 
         if ($role !== "admin") {
             if ($employe->filiale_id !== $branch->id) {

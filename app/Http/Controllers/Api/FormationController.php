@@ -3,18 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Finance;
-use App\Http\Requests\StoreFinanceRequest;
-use App\Http\Requests\UpdateFinanceRequest;
+use App\Models\Formation;
+use App\Http\Requests\StoreFormationRequest;
+use App\Http\Requests\UpdateFormationRequest;
+use App\Http\Resources\FormationResource;
+use App\Models\Employe;
 use App\Models\Filiale;
-use App\Http\Resources\FinanceResource;
 
-class FinanceController extends Controller
+class FormationController extends Controller
 {
-
-        public function __construct() {
-        $this->middleware('auth');
-    }
     /**
      * Display a listing of the resource.
      */
@@ -24,80 +21,65 @@ class FinanceController extends Controller
         $branch = auth()->user()->filiales->first();
 
 
-        $this->authorize('viewAny', Finance::class);
-
         if ($role === "admin") {
-            $finance = Finance::all();
-        } 
-        else {
+            $formations = Formation::all();
+        } else {
             $id = $branch->id;
             if (!is_null($id)) {
-                $filiale = Filiale::findOrFail($id);
-                $finance = $filiale->finances;
+                $formations = Formation::whereHas('employe', function ($query) use ($id) {
+                    $query->where('filiale_id', $id);
+                })->get();
             } else {
                 return response([]);
             }
         }
-        return FinanceResource::collection($finance);
+        return FormationResource::collection($formations);    
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreFinanceRequest $request)
+    public function store(StoreFormationRequest $request)
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
+
 
         $auth = ["admin", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
-        // $this->authorize('create', Finance::class);
-
 
         $data = $request->validated();
 
-        if ($role !== "admin") {
-            if (!is_null($branch->id)) {
-                $data['filiale_id'] = !empty($data['filiale_id']) ? $data['filiale_id'] : $branch->id;
-            } else {
-                return response([
-                    'message' => "you don't have the permission de to this action"
-                ], 422);                
-            }
-        }
-        $finance = Finance::create($data);
-        return new FinanceResource($finance);
+        $formation = Formation::create($data);
+        return new FormationResource($formation);    
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Finance $finance)
+    public function show(Formation $formation)
     {
-
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
-        $this->authorize('view', $finance);
-
 
         if ($role !== "admin") {
-            if ($finance->filiale_id !== $branch->id) {
+            $id = $branch->id;
+            if ($formation->employe_id !== Employe::where('filiale_id', $id)->first()->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
             }
         }
 
-        return new FinanceResource($finance);
-
+        return new FormationResource($formation);  
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateFinanceRequest $request, Finance $finance)
+    public function update(UpdateFormationRequest $request, Formation $formation)
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
@@ -107,11 +89,10 @@ class FinanceController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
-        $this->authorize('update', $finance);
-
 
         if ($role !== "admin") {
-            if ($finance->filiale_id !== $branch->id) {
+            $id = $branch->id;
+            if ($formation->employe_id !== Employe::where('filiale_id', $id)->first()->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
@@ -119,14 +100,14 @@ class FinanceController extends Controller
         }
 
         $data = $request->validated();
-        $finance->update($data);
-        return new FinanceResource($finance);    
+        $formation->update($data);
+        return new FormationResource($formation);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Finance $finance)
+    public function destroy(Formation $formation)
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first->id;
@@ -135,18 +116,18 @@ class FinanceController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
-        $this->authorize('delete', $finance);
-
 
         if ($role !== "admin") {
-            if ($finance->filiale_id !== $branch->id) {
+            $id = $branch->id;
+            if ($formation->employe_id !== Employe::where('filiale_id', $id)->first()->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
                 ], 422);    
             }
-        }  
-        
-        $finance->delete();
-        return response()->json(['message' => 'Employee deleted successfully']);
+        }
+    
+        $formation->delete();
+        return response()->json(['message' => 'Formataion deleted successfully']);
+    
     }
 }

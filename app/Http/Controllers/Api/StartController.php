@@ -18,10 +18,15 @@ class StartController extends Controller
         $filiale_id = $filiale ? $filiale->id : null;
         $filiale_name = $filiale ? $filiale->nom_filiale : "";
 
+        $admission = $request->user()->admissions()->first();
+        $admission_id = $admission ? $admission->id : null;
+        $admission_name = $admission ? $admission->name : "non";
+
         return response([
             'user' => $request->user(),
             'role' => $roleName,
-            'filiale' => ["id" => $filiale_id, "name" => $filiale_name]
+            'filiale' => ["id" => $filiale_id, "name" => $filiale_name],
+            'admission' => ["id" => $admission_id, "name" => $admission_name]
         ]);
     }
 

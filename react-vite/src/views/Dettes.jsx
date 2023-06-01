@@ -41,6 +41,16 @@ const Dettes = () => {
         })
       }
 
+    const edit = role !== "editor" ? null : {
+      field: "edit",
+      headerName: "Edit",
+      flex: 0.5,
+      renderCell: (params) => (
+        <IconButton onClick={() => handleEditRow(params.row)}>
+          <EditOutlinedIcon />
+        </IconButton>
+      ),
+    }
     const columns = [
         { field: "id", headerName: "ID", flex: 0.5 },
         { field: "intitule_projet", headerName: "Intitule Projet", flex: 0.5 },
@@ -50,19 +60,12 @@ const Dettes = () => {
         { field: "montant", headerName: "montant", flex: 0.5},
         { field: "creditor", headerName: "créditeur", flex: 0.5},
         { field: "debtor", headerName: "débiteur", flex: 1},
-        {
-            field: "edit",
-            headerName: "Edit",
-            flex: 0.5,
-            renderCell: (params) => (
-              <IconButton onClick={() => handleEditRow(params.row)}>
-                <EditOutlinedIcon />
-              </IconButton>
-            ),
-        },
     ]
 
-      
+    if (edit !== null) {
+      columns.push(edit);
+    }  
+
     useEffect(() => {
       setLoading(true)
       getDettes()

@@ -12,6 +12,9 @@ use App\Models\Entreprise;
 
 class CreanceController extends Controller
 {
+    public function __construct() {
+        $this->middleware('auth');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -20,10 +23,12 @@ class CreanceController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
+
+        $this->authorize('viewAny', Creance::class);
+        
         if ($role === "admin") {
             $creance = Creance::all();
-        } 
-        else 
+        } else 
         {
             $id = $branch->id;
             if (!is_null($id)) {
@@ -56,6 +61,8 @@ class CreanceController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
+
+        $this->authorize('create', Creance::class);
 
         $data = $request->validated();
         $creditor_type = $data['creditor_type']; 
@@ -100,6 +107,9 @@ class CreanceController extends Controller
     {
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
+        $this->authorize('view', $creance);
+
+        
 
         if ($role !== "admin") {
             if (($creance->debtor_id !== $branch->id) and ($creance->creditor_id !== $branch->id)) {
@@ -125,6 +135,10 @@ class CreanceController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
+
+        $this->authorize('update', $creance);
+
+
         
         if ($role !== "admin") {
             if (($creance->debtor_id !== $branch->id) and ($creance->creditor_id !== $branch->id)) {
@@ -170,6 +184,7 @@ class CreanceController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
+        $this->authorize('delete', $creance);
 
         if ($role !== "admin") {
             if (($creance->debtor_id !== $branch->id) and ($creance->creditor_id !== $branch->id)) {
