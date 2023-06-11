@@ -19,9 +19,9 @@ import Paper from '@mui/material/Paper';
 //   createData("EBE", 356, 16.0, 49, 3.9),
 // ];
 
-export default function DenseTable({data}) {
+export default function DenseTable({data, id}) {
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} id={id}>
       <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>

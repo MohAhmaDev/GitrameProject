@@ -5,7 +5,8 @@ FormControl, Select, InputLabel, MenuItem} from '@mui/material';
 import axiosClient from '../../axios-client';
 import { useForm, Controller } from "react-hook-form";
 import { useDisplayContext } from '../../contexts/DisplayContext';
-
+import { Link } from 'react-router-dom';
+import 'table2excel';
 
 const Dashboard02 = () => {
 
@@ -50,11 +51,11 @@ const Dashboard02 = () => {
         if (Object.keys(dash).length !== 0) {
             const rows = dash.map(resultat => {
                 const Agregat_calculer = resultat.Agregat_calculer;
-                const Montant_Realisation =  (resultat.Montant_Realisation);
-                const Montant_Privision = (resultat.Montant_Privision);
-                const Ecart_Valeur = (resultat.Ecart_Valeur);
-                const taux_Realisation = (resultat.taux);
-              
+                const Montant_Realisation = resultat.Montant_Realisation;
+                const Montant_Privision = resultat.Montant_Privision;
+                const Ecart_Valeur = resultat.Ecart_Valeur;
+                const taux_Realisation = resultat.taux;
+        
                 return createData(Agregat_calculer, Montant_Realisation, Montant_Privision, Ecart_Valeur, taux_Realisation);
             });
             console.log("rows", rows) 
@@ -72,6 +73,32 @@ const Dashboard02 = () => {
             filiale: "",
             date: ""
         })
+    }
+
+    const downloadReport = () => {
+        const invoice = document.getElementById("print");
+        console.log(invoice);
+        var opt = {
+            margin: 1,
+            filename: 'myfile.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+        html2pdf().from(invoice).set(opt).save();
+    }
+
+    const exportData = () => {
+        const Table2Excel = window.Table2Excel;
+        var table2excel = new Table2Excel({
+            exclude:".noExl",
+            defaultFileName:"Worksheet Name",
+            filename:"SomeFile",
+            fileext:".xls",
+            preserveColors:true
+        });
+        table2excel.export(document.querySelectorAll("table"));	
+        console.log("ou ! oui vous l'avais")
     }
 
     return (
@@ -128,13 +155,18 @@ const Dashboard02 = () => {
                 </Box> 
 
                 
-                {(rows && Object.keys(rows).length !== 0) ? <DenseTable data={rows}/> : <CircularProgress disableShrink />}
+                {(rows && Object.keys(rows).length !== 0) ? <DenseTable data={rows} id="print"/> : <CircularProgress disableShrink />}
                 <Box display="flex" justifyContent="end" mt="20px" m="10px">
                     <Button type="submit" color="primary" variant="contained">
                         Renaitialiser
                     </Button>
-                </Box>                 
-                </form>
+                    <a style={{ marginLeft: "10px" }} className='btn-add' 
+                    onClick={ev => {downloadReport()}}> PDF REPORT </a>
+                    <a style={{ marginLeft: "10px" }} className='btn-delete' 
+                    onClick={ev => {exportData()}}> EXEL REPORT </a>
+                </Box>                                                        
+                </form>                      
+                
             </div>
         </>
     );

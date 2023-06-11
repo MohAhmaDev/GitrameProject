@@ -13,7 +13,7 @@ class EntrepriseController extends Controller
      */
     public function index()
     {
-        $entreprises = entreprise::all();
+        $entreprises = Entreprise::query()->where('groupe', '!=', 'gitrame')->get();
 
         $results = $entreprises->map(function ($entreprise) {
 		    return [

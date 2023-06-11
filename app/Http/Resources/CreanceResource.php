@@ -20,25 +20,11 @@ class CreanceResource extends JsonResource
         $filiale = $request->user()->filiales()->first();
         $filiale_name = $filiale ? $filiale->nom_filiale : null;
 
-        $firme_c = $this->creditor_type;
         $id_c = $this->creditor_id;
-        if ($firme_c === Entreprise::class) {
-            $creditor = Entreprise::where('id', $id_c)->firstOrFail()->nom_entreprise;
-        } elseif ($firme_c === Filiale::class) {
-            $creditor = Filiale::where('id', $id_c)->firstOrFail()->nom_filiale;
-        } else {
-           $creditor = NULL; 
-        }
-
-        $firme_d = $this->debtor_type;
         $id_d = $this->debtor_id;
-        if ($firme_d === Entreprise::class) {
-            $debtor = Entreprise::where('id', $id_d)->firstOrFail()->nom_entreprise;
-        } elseif ($firme_d === Filiale::class) {
-            $debtor = Filiale::where('id', $id_d)->firstOrFail()->nom_filiale;
-        } else {
-           $debtor = NULL; 
-        }
+        $creditor = Entreprise::where('id', $id_c)->firstOrFail()->nom_entreprise;
+        $debtor = Entreprise::where('id', $id_d)->firstOrFail()->nom_entreprise;
+
 
         if (!is_null($filiale_name)) {
             if ($filiale_name === $creditor) {
@@ -64,6 +50,8 @@ class CreanceResource extends JsonResource
             'debtor_id' => $this->debtor_id,        
             'creditor_id' => $this->creditor_id,
             'role' => is_null($role) ? "" : $role,
+            'montant_encaissement' => $this->montant_encaissement,
+            'regler' => $this->regler
         ];
     }
 }

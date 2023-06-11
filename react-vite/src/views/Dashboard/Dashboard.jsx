@@ -30,7 +30,7 @@ export default function Dashboard() {
 
 
   const getData = () => {
-    axiosClient.get('/dash').then(({data}) => {
+    axiosClient.post('/dash').then(({data}) => {
       setDash02(data.dash02)
       setDash03(data.dash03)
       setDash01(data.dash01)

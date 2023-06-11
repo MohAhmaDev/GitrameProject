@@ -62,11 +62,13 @@ class CreanceController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $this->authorize('create', Creance::class);
+        // $this->authorize('create', Creance::class);
 
         $data = $request->validated();
         $creditor_type = $data['creditor_type']; 
         $debtor_type = $data['debtor_type'];
+        $anteriorite_creance = $data['anteriorite_creance'];
+        $date_creance = $data['date_creance'];
 
         $data['creditor_type'] = $creditor_type === 'filiale' ? Filiale::class : Entreprise::class;
         $data['debtor_type'] = $debtor_type === 'entreprise' ? Entreprise::class : Filiale::class;
@@ -96,6 +98,15 @@ class CreanceController extends Controller
                 }
             }
         }
+
+        if ($date_creance > $anteriorite_creance) {
+            return response([
+                'message' => "la date d'anteriorite de la creance doit etre supperieur à la date de facturation"
+            ], 422);              
+        }
+
+
+
         $creance = Creance::create($data);
         return new CreanceResource($creance);
     }
@@ -136,7 +147,7 @@ class CreanceController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $this->authorize('update', $creance);
+        // $this->authorize('update', $creance);
 
 
         
@@ -151,6 +162,8 @@ class CreanceController extends Controller
         $data = $request->validated();
         $creditor_type = $data['creditor_type']; 
         $debtor_type = $data['debtor_type'];
+        $montant_encaissement = $data['montant_encaissement'];
+        $montant = $data['montant'];
 
         $data['creditor_type'] = $creditor_type === 'filiale' ? Filiale::class : Entreprise::class;
         $data['debtor_type'] = $debtor_type === 'entreprise' ? Entreprise::class : Filiale::class;
@@ -168,6 +181,19 @@ class CreanceController extends Controller
             ], 422);                 
         }
 
+        if ($montant < $montant_encaissement) {
+            return response([
+                'message' => "le montant d'encaissement doit etre inférieur aux montant de la détte"
+            ], 422);           
+        } else {
+            if ($montant == $montant_encaissement) {
+                $data['regler'] = TRUE;
+            }
+            if ($data['regler']) {
+                $data['montant_encaissement'] = $montant;    
+            }
+        }        
+
         $creance->update($data);
         return new CreanceResource($creance);
     }
@@ -184,7 +210,7 @@ class CreanceController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
-        $this->authorize('delete', $creance);
+        // $this->authorize('delete', $creance);
 
         if ($role !== "admin") {
             if (($creance->debtor_id !== $branch->id) and ($creance->creditor_id !== $branch->id)) {

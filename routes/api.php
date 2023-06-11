@@ -18,6 +18,7 @@ use App\Http\Resources\FinanceResource;
 use App\Models\Admission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,10 +59,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('/dettes', DetteController::class);
     Route::apiResource('/creances', CreanceController::class);
     Route::apiResource('/formations', FormationController::class);
-    Route::get('/dash', [DashboardController::class, 'get_Employes_dash']);
+    Route::post('/dash', [DashboardController::class, 'get_Employes_dash']);
     Route::get('/dash-line', [DashboardController::class, 'get_FFinances']);
     Route::get('/dash-ca', [DashboardController::class, 'get_ca']);
     Route::post('/finance_dashboard', [DashboardController::class, 'get_dashboard_finance']);
+    Route::post('/rhs_dashboard', [DashboardController::class, 'get_dashboard_rhs']);
+    Route::post('/dash_creance_dettes', [DashboardController::class, 'get_fcreance_dette']);
+    Route::get('date_fcreance_dettes', [DashboardController::class, 'get_Mois']);
 });
 
 Route::post('/signup', [AuthController::class, 'signup']);

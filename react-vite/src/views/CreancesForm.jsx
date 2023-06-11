@@ -47,6 +47,7 @@ export default function CreancesForm() {
     creditor_id: null,
     observations: '',
     role: "",
+    montant_encaissement: null
   })
   const [show, setShow] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -136,6 +137,8 @@ export default function CreancesForm() {
         debtor_type: selected?.debtor ? "filiale" : data.debtor_type,
         debtor_id: selected?.debtor ? selected?.id : data.debtor_id,
         montant: data.montant,
+        montant_encaissement: data.montant_encaissement,
+        regler: data.regler
       }
       axiosClient.put(`/creances/${creance.id}`, updateCreance)
       .then(() => {
@@ -148,7 +151,7 @@ export default function CreancesForm() {
         const response = err.response;
         if (response && response.status === 422) {
           setError('server', {
-            message: response?.data.errors
+            message: response?.data.message
           })        
         }
       })
@@ -177,7 +180,7 @@ export default function CreancesForm() {
         console.log(err)
         const response = err.response;
         setError('server', {
-          message: response?.data.errors
+          message: response?.data.message
         })       
       })
     }
@@ -260,7 +263,9 @@ export default function CreancesForm() {
         creditor_id: data.data.creditor_id,
         debtor_type: data.data.debtor_type,
         debtor_id: data.data.debtor_id,   
-        role: data.data.role,       
+        role: data.data.role,  
+        montant_encaissement: data.data.montant_encaissement,
+        regler: data.data.regler           
       })
       reset({...data.data})
       setLoading(false)
@@ -417,7 +422,7 @@ if (id) {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
                     sx={{ gridColumn: "span 2" }}
-                    label="date de la mois de creance" 
+                    label="date de facturation" 
                     format="DD/MM/YYYY"
                     value={creance?.date_creance}
                     onChange={ev => {
@@ -441,7 +446,7 @@ if (id) {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
                     sx={{ gridColumn: "span 2" }}
-                    label="date anteriorite de la creance" 
+                    label="anteriorite de la creance" 
                     format="DD/MM/YYYY"
                     value={creance?.anteriorite_creance}
                     onChange={ev => {
@@ -469,6 +474,16 @@ if (id) {
                 error={errors.montant ? true : false}
                 helperText={errors.montant?.message}
               />
+              {(creance?.id && !creance?.regler) && 
+              <TextField
+                type="number"
+                {...register('montant_encaissement')}
+                value={creance.montant_encaissement}
+                onChange={ev => setCreance({...creance, montant_encaissement: ev.target.value})}
+                label="montant_encaissement"
+                variant="outlined"
+                sx={{ gridColumn: "span 2" }}
+              />}
               <TextField
                 type="text"
                 {...register('observations')}
@@ -487,6 +502,12 @@ if (id) {
             </Box>
           </form>
       </Box>
+      {errors?.server?.message &&
+          <div className="alert">
+            {errors &&
+              <p>{ errors?.server?.message }</p>
+            }
+      </div>}
     </div>}
     {loading && <CircularProgress disableShrink /> }
   </>);

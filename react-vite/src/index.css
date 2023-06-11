@@ -388,3 +388,23 @@ table > tbody > tr > td {
     background:#434343;
     border-radius: 5px;
   }
+
+
+  .ftable {
+    border-collapse: collapse;
+  }
+  
+   td.F_, th.F_ {  
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  
+  th.F_, td.F_ {
+    padding: 10px;
+  }
+  
+  th.F_ {
+    background: lightblue;
+    border-color: white;
+  }

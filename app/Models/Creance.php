@@ -11,7 +11,7 @@ class Creance extends Model
     
     public $fillable = ['intitule_projet', 'num_fact', 'num_situation',
      'anteriorite_creance', 'date_creance', 'montant', 'observations', 'debtor_id'
-     , 'debtor_type','creditor_id', 'creditor_type'];
+     , 'debtor_type','creditor_id', 'creditor_type', 'montant_encaissement', 'regler'];
 
     public function creditor()
     {

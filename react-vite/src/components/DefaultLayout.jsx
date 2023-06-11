@@ -95,7 +95,7 @@ export default function DefaultLayout() {
                 {(role === "admin" || admission?.name === "A2") && <Link to='/dettes' className='toggle-menue'> Listes des Dettes </Link>}
                 {(role === "admin" || admission?.name === "A4") && <Link to='/finances' className='toggle-menue'> Listes des Finances </Link>}
                 {(role === "admin" || admission?.name === "A3") && <Link to='/creances' className='toggle-menue'> Listes des creances </Link>}
-                {(role === "admin" || admission?.name === "A1") && <Link to='/stagiares' className='toggle-menue'> Listes des Stagiares </Link>}
+                {/* {(role === "admin" || admission?.name === "A1") && <Link to='/stagiares' className='toggle-menue'> Listes des Stagiares </Link>} */}
                 {(role === "admin" || admission?.name === "A1") && <Link to='/formations' className='toggle-menue'> Listes des Formations </Link>}
 
             </aside>

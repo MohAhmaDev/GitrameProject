@@ -10,7 +10,7 @@ class Dette extends Model
     use HasFactory;
     public $fillable = ['intitule_projet', 'num_fact', 'num_situation',
      'date_dettes', 'montant', 'observations', 'debtor_id', 'debtor_type',
-     'creditor_id', 'creditor_type'];
+     'creditor_id', 'creditor_type', 'montant_encaissement', 'regler'];
 
     public function creditor()
     {

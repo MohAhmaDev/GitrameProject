@@ -26,8 +26,8 @@ class UpdateCreanceRequest extends FormRequest
             'intitule_projet' => 'required|string|max:55',
             'num_fact' => 'required|string|max:55',
             'num_situation' => 'required|string|max:55',
-            'anteriorite_creance' => ['required','date','before:2023-04-22'],
-            'date_creance' => ['required','date','before:2023-04-22'],
+            'anteriorite_creance' => ['required','date'],
+            'date_creance' => ['required','date','before:today'],
             'observations' => 'string',
             'creditor_type' => [
                 'required',
@@ -41,7 +41,9 @@ class UpdateCreanceRequest extends FormRequest
                 Rule::in(['filiale', 'entreprise'])
             ],
             'debtor_id' => 'required|integer',
-            'montant' => ['numeric', 'min:10000'],     
+            'montant' => ['numeric', 'min:10000'],   
+            'montant_encaissement' => ['numeric', 'min:10000'],
+            'regler' => 'boolean'  
         ];
     }
 }

@@ -41,7 +41,8 @@ const Creances = () => {
         })
       }
     
-    const edit = role !== "editor" ? null : {
+    // const edit = role !== "editor" ? null : {
+      const edit = {
       field: "edit",
       headerName: "Edit",
       flex: 0.5,
@@ -62,6 +63,10 @@ const Creances = () => {
         { field: "montant", headerName: "montant", flex: 0.5},
         { field: "creditor", headerName: "créditeur", flex: 0.5},
         { field: "debtor", headerName: "débiteur", flex: 1},
+        { field: "regler", headerName: "Encaissement", type: "number",
+        flex: 1, valueGetter: (params) => {
+         return(params.value ? "regler" : "non regler")
+        }  },
     ]
 
     if (edit !== null) {

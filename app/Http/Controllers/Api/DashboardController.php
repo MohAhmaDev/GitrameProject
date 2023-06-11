@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class DashboardController extends Controller
 {
         
-    public function get_Employes_dash() 
+    public function get_Employes_dash(Request $request) 
     {
         $trancheAges = DB::table('femploye')
             ->join('dage', 'femploye.ID_Age', '=', 'dage.ID_Age')
@@ -312,8 +312,184 @@ class DashboardController extends Controller
 
 
     }
+
+    public function get_dashboard_rhs(Request $request) {
+
+
+        $year = $request->date;
+        $filiale = $request->filiale;
+
+        $res01 = DB::table('femploye')
+        ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
+        ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps')
+        ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN ID_Sexe = 2 THEN "femme" WHEN ID_Sexe = 1 THEN "homme" END AS gestion_ressource'));
+        
+        $req01 = $res01
+        ->groupBy('gestion_ressource')
+        ->get();
+    
+        $res02 = DB::table('femploye')
+        ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
+        ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps')
+        ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN dscociopro.Scocipro = "Cadre superieur" THEN "cadre superieur" WHEN dscociopro.Scocipro = "Cadre" THEN "cadre" WHEN dscociopro.Scocipro = "Cadre dirigeant" THEN "cadre dirigeant" WHEN dscociopro.Scocipro = "maitrise" THEN "maitrise" WHEN dscociopro.Scocipro = "execution" THEN "execution" ELSE "retraite" END AS gestion_ressource'));
+
+        $req02 = $res02
+        ->groupBy('gestion_ressource')
+        ->get(); 
+
+        $res03 = DB::table('femploye')
+        ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
+        ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps')
+        ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN dscociopro.Scocipro IN ("maitrise", "execution") THEN "personnelle technique" WHEN dscociopro.Scocipro NOT IN ("maitrise", "execution") THEN "personnelle administratifs" END AS gestion_ressource'));
+
+        $req03 = $res03
+        ->groupBy('gestion_ressource')
+        ->get();
+
+        if (!empty($year) && !empty($filiale)) {
+            $req01 = $res01
+            ->where('dtemps.annee', $year)
+            ->where('femploye.ID_Ent', $filiale)
+            ->groupBy('gestion_ressource')
+            ->get();
+
+            $req02 = $res02
+            ->where('dtemps.annee', $year)
+            ->where('femploye.ID_Ent', $filiale)
+            ->groupBy('gestion_ressource')
+            ->get();
+
+            $req03 = $res03
+            ->where('dtemps.annee', $year)
+            ->where('femploye.ID_Ent', $filiale)
+            ->groupBy('gestion_ressource')
+            ->get();
+        } else {
+            if (!empty($year)) {
+                $req01 = $res01
+                ->where('dtemps.annee', $year)
+                ->groupBy('gestion_ressource')
+                ->get();
+    
+                $req02 = $res02
+                ->where('dtemps.annee', $year)
+                ->groupBy('gestion_ressource')
+                ->get();
+    
+                $req03 = $res03
+                ->where('dtemps.annee', $year)
+                ->groupBy('gestion_ressource')
+                ->get();         
+            } 
+            if (!empty($filiale)) {
+                $req01 = $res01
+                ->where('femploye.ID_Ent', $filiale)
+                ->groupBy('gestion_ressource')
+                ->get();
+    
+                $req02 = $res02
+                ->where('femploye.ID_Ent', $filiale)
+                ->groupBy('gestion_ressource')
+                ->get();
+    
+                $req03 = $res03
+                ->where('femploye.ID_Ent', $filiale)
+                ->groupBy('gestion_ressource')
+                ->get();               
+            }
+        }
+    
+        $result1 = $req01->map(function ($req) {
+            $EBE = $req->gestion_ressource;
+            $val = $req->nb_employes;
+    
+            return [
+                'key' => $EBE,
+                'val' => $val
+            ];
+        });
+    
+        $result2 = $req02->map(function ($req) {
+            $EBE = $req->gestion_ressource;
+            $val = $req->nb_employes;
+    
+            return [
+                'key' => $EBE,
+                'val' => $val
+            ];
+        });
+    
+        $result3 = $req03->map(function ($req) {
+            $EBE = $req->gestion_ressource;
+            $val = $req->nb_employes;
+    
+            return [
+                'key' => $EBE,
+                'val' => $val
+            ];
+        });
+    
+    
+        $result = $result1->concat($result3);
+    
+    
+        return response(["ebe1" => $result, "ebe2" => $result2]);
+    }
     
 
+    function get_fcreance_dette(Request $request) {
+        $results = DB::table('fcreances_dettes')
+        ->groupBy('ID_Ent_A', 'ID_Ent_B')
+        ->get();
+    
+        $req = [];
+        $date = $request->date;
+        $filiale = $request->filiale;
+
+    
+        for ($i = 1; $i < 19; $i++) {
+            for ($j = 1; $j < 19; $j++) {
+                $key = $i . '-' . $j;
+    
+                $filteredResult = $results->where('ID_Ent_A', $i)->where('ID_Ent_B', $j)->first();
+    
+                if ($filteredResult) {
+                    $req[$key] = $filteredResult;
+    
+                } else {
+                    $req[$key] = (object) [
+                        'ID_Ent_A' => $i,
+                        'ID_Ent_B' => $j,
+                        'Montant_Factures' => 0,
+                        'Montant_Creances' => 0,
+                        'Nbr_Factures' => 0,
+                        'Nbr_Creances' => 0,
+                        'Montant_Dettes' => 0,
+                        'Nbr_Dettes' => 0,
+                        'Creances_vs_Dettes' => 0
+                    ];
+                }
+            }
+        }
+    
+        $finalResults = array_values($req);
+    
+    
+    
+    
+        return response($finalResults);
+    }
+
+
+    function get_Mois() {
+        $result = DB::table('fcreances_dettes')
+        ->join('dtemps', 'dtemps.ID_Temps', '=', 'fcreances_dettes.ID_Temps')
+        ->select(DB::raw('DISTINCT(DATE_FORMAT(dtemps.DATE, "%Y-%m")) as date_mois, fcreances_dettes.ID_Temps as id'))
+        ->get();
+    
+
+        return response($result);
+    }
 
 
 }

@@ -46,6 +46,7 @@ export default function DettesForm() {
     creditor_id: null,
     observations: '',
     role: "",
+    montant_encaissement: null,
   })
   const [show, setShow] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -159,6 +160,8 @@ export default function DettesForm() {
         debtor_type: selected?.debtor ? "filiale" : data.debtor_type,
         debtor_id: selected?.debtor ? selected?.id : data.debtor_id,
         montant: data.montant,
+        montant_encaissement: data.montant_encaissement,
+        regler: data.regler
       }
       axiosClient.put(`/dettes/${dette.id}`, updateDette)
       .then(() => {
@@ -171,10 +174,11 @@ export default function DettesForm() {
         const response = err.response;
         if (response && response.status === 422) {
           setError('server', {
-            message: response?.data.errors
+            message: response?.data.message
           })        
         }
       })
+      console.log(updateDette)
     } 
     else 
     {
@@ -281,7 +285,9 @@ export default function DettesForm() {
         creditor_id: data.data.creditor_id,
         debtor_type: data.data.debtor_type,
         debtor_id: data.data.debtor_id,   
-        role: data.data.role,       
+        role: data.data.role, 
+        montant_encaissement: data.data.montant_encaissement,
+        regler: data.data.regler      
       })
       reset({...data.data})
       setLoading(false)
@@ -466,6 +472,15 @@ if (id) {
                 error={errors.montant ? true : false}
                 helperText={errors.montant?.message}
               />
+              {(dette?.id && !dette?.regler) && <TextField
+                type="number"
+                {...register('montant_encaissement')}
+                value={dette.montant_encaissement}
+                onChange={ev => setDette({...dette, montant_encaissement: ev.target.value})}
+                label="montant_encaissement"
+                variant="outlined"
+                sx={{ gridColumn: "span 2" }}
+              />}
               <TextField
                 type="text"
                 {...register('observations')}
@@ -486,9 +501,9 @@ if (id) {
       </Box>
       {errors?.server?.message &&
           <div className="alert">
-            {Object.keys(errors?.server?.message).map(key => (
-              <p>{errors?.server?.message[key][0]}</p>
-            ))}
+            {errors &&
+              <p>{ errors?.server?.message }</p>
+            }
           </div>}
     </div>}
     {loading && <CircularProgress disableShrink /> }

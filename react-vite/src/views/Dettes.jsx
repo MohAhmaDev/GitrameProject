@@ -41,7 +41,8 @@ const Dettes = () => {
         })
       }
 
-    const edit = role !== "editor" ? null : {
+    // const edit = role !== "editor" ? null : {
+      const edit =  {
       field: "edit",
       headerName: "Edit",
       flex: 0.5,
@@ -54,12 +55,16 @@ const Dettes = () => {
     const columns = [
         { field: "id", headerName: "ID", flex: 0.5 },
         { field: "intitule_projet", headerName: "Intitule Projet", flex: 0.5 },
-        { field: "num_fact", headerName: "Numero Facture", flex: 1},
-        { field: "num_situation", headerName: "Numéro situation", flex: 1},
+        { field: "num_fact", headerName: "Numero Facture", flex: 0.5},
+        { field: "num_situation", headerName: "Numéro situation", flex: 0.5},
         { field: "date_dettes", headerName: "Date", flex: 1},
         { field: "montant", headerName: "montant", flex: 0.5},
         { field: "creditor", headerName: "créditeur", flex: 0.5},
-        { field: "debtor", headerName: "débiteur", flex: 1},
+        { field: "debtor", headerName: "débiteur", flex: 0.5},
+        { field: "regler", headerName: "Encaissement",
+         flex: 0.5, valueGetter: (params) => {
+          return(params.value ? "regler" : "non regler")
+         }  },
     ]
 
     if (edit !== null) {
@@ -108,8 +113,6 @@ const Dettes = () => {
                     </div>
                 </div>
             } 
-            {(role === "admin" && !loading) && 
-              <Link to="/entreprise/add"> <Button sx={{ margin: "20px" }} variant='contained'> ajouter une entreprise </Button> </Link>}   
         </div>
     );
 };

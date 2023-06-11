@@ -63,7 +63,7 @@ class DetteController extends Controller
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
-        $this->authorize('create', Dette::class);
+        // $this->authorize('create', Dette::class);
 
         $data = $request->validated();
         $creditor_type = $data['creditor_type']; 
@@ -132,7 +132,7 @@ class DetteController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
-        $this->authorize('update', $dette);
+        // $this->authorize('update', $dette);
 
         $auth = ["admin", "editor"];
         if (!in_array($role, $auth)) {
@@ -152,6 +152,8 @@ class DetteController extends Controller
         $data = $request->validated();
         $creditor_type = $data['creditor_type']; 
         $debtor_type = $data['debtor_type'];
+        $montant_encaissement = $data['montant_encaissement'];
+        $montant = $data['montant'];
 
         $data['creditor_type'] = $creditor_type === 'filiale' ? Filiale::class : Entreprise::class;
         $data['debtor_type'] = $debtor_type === 'entreprise' ? Entreprise::class : Filiale::class;
@@ -170,10 +172,21 @@ class DetteController extends Controller
             ], 422);                 
         }
 
+        if ($montant < $montant_encaissement) {
+            return response([
+                'message' => "le montant d'encaissement doit etre inférieur aux montant de la détte"
+            ], 422);           
+        } else {
+            if ($montant == $montant_encaissement) {
+                $data['regler'] = TRUE;
+            }
+            if ($data['regler']) {
+                $data['montant_encaissement'] = $montant;    
+            }
+        }   
 
         $dette->update($data);
         return new DetteResource($dette);
-
     }
 
     /**
@@ -190,7 +203,7 @@ class DetteController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $this->authorize('delete', $dette);
+        // $this->authorize('delete', $dette);
 
         if ($role !== "admin") {
             if (($dette->debtor_id !== $branch->id) and ($dette->creditor_id !== $branch->id)) {

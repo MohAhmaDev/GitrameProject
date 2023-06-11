@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use PhpParser\Node\Expr\Cast\Object_;
 use PhpParser\Node\Stmt\Echo_;
+use PhpParser\Node\Stmt\Return_;
 
 use function PHPSTORM_META\map;
 use function PHPUnit\Framework\isEmpty;
@@ -70,8 +71,17 @@ Route::get('/', function () {
     // return $formation;
 
     $employe_name = Employe::find(31)->nom;
+    // $employe_ids = Employe::pluck('id');
+    $employe_ids = Employe::pluck('id')->all();
+    $random_id = $employe_ids[array_rand($employe_ids)];
+    $domaines = DB::table('ddomaine')
+    ->select('Domaine')
+    ->distinct()
+    ->get()->random()->Domaine;
 
-    return $employe_name;
+    $entreprise = \App\Models\Entreprise::query()->where('groupe', '!=', 'gitrame')->get();
+    
+    return $entreprise;
 
 });
 
@@ -850,6 +860,76 @@ Route::get('addFinance', function () {
 });
 
 
+
+Route::get('addFormation', function () {
+
+    $results = DB::table('formations')
+    ->join('employes', 'formations.employe_id', '=', 'employes.id')
+    ->join('dtemps', DB::raw("DATE_FORMAT(formations.created_at, '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps.DATE, '%Y-%m')"))
+    ->join('ddomaine', 'formations.domaine_formation', '=', 'ddomaine.Domaine')
+    ->join('dentreprise', 'employes.filiale_id', '=', 'dentreprise.ID_Ent')
+    ->select(
+        'dtemps.ID_Temps as ID_Temps',
+        'dentreprise.ID_Ent as ID_Ent',
+        'ddomaine.ID_Domaine as ID_Domaine',
+        DB::raw('CASE
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) <= 20 THEN 1
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 21 AND 25 THEN 2 
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 21 AND 25 THEN 3
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 26 AND 30 THEN 4
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 31 AND 35 THEN 5
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 36 AND 40 THEN 6
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 41 AND 45 THEN 7
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 46 AND 50 THEN 8
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 51 AND 55 THEN 9
+            WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 56 AND 60 THEN 10
+            ELSE 11
+        END AS ID_Age'),
+        DB::raw('CASE
+            WHEN formations.duree_formation < 15 THEN 1
+            WHEN formations.duree_formation BETWEEN 15 AND 29 THEN 2 
+            WHEN formations.duree_formation BETWEEN 30 AND 44 THEN 3
+            WHEN formations.duree_formation BETWEEN 45 AND 59 THEN 4
+            WHEN formations.duree_formation BETWEEN 60 AND 74 THEN 5
+            WHEN formations.duree_formation BETWEEN 75 AND 89 THEN 6
+            ELSE 7
+        END as ID_Duree'),
+        DB::raw('COUNT(employes.id) as Nombre_Eff'),
+        DB::raw('SUM(formations.montant) as Montant')
+    )
+    ->groupBy('ID_Temps', 'ID_Ent', 'ID_Domaine', 'ID_Duree', 'ID_Age')
+    ->get();
+
+    $TransformRequest = $results->map(function ($result) {
+        $id0 = $result->ID_Temps;
+        $id1 = $result->ID_Ent;
+        $id2 =  $result->ID_Domaine;
+        $id4 = $result->ID_Duree;
+        $id5 = $result->ID_Age;
+        $Nombre_Eff = $result->Nombre_Eff;
+        $Montant = $result->Montant;
+        return [
+            'ID_Temps' => $id0,
+            'ID_Ent' => $id1,
+            'ID_Domaine' => $id2,
+            'ID_Duree' => $id4,
+            'ID_Age' => $id5,
+            'Nombre_Eff' => $Nombre_Eff,
+            'Montant' => $Montant
+        ];
+    });
+
+    $query = DB::table('fformation')->insert($TransformRequest->toArray());
+    if ($query) {
+        echo "Les données ont bien été transformées.";                             
+    } else { 
+        echo "Une erreur s'est produite lors du chargement des données.";              
+    }
+});
+
+
+
+
 Route::get('finance_dashboard', function () {
 
     $year = 2016;
@@ -1090,7 +1170,7 @@ Route::get('dash_rhs', function () {
         $val = $req->nb_employes;
 
         return [
-            'EBE' => $EBE,
+            'key' => $EBE,
             'val' => $val
         ];
     });
@@ -1100,7 +1180,7 @@ Route::get('dash_rhs', function () {
         $val = $req->nb_employes;
 
         return [
-            'EBE' => $EBE,
+            'key' => $EBE,
             'val' => $val
         ];
     });
@@ -1110,11 +1190,151 @@ Route::get('dash_rhs', function () {
         $val = $req->nb_employes;
 
         return [
-            'EBE' => $EBE,
+            'key' => $EBE,
             'val' => $val
         ];
     });
 
 
-    return response(["part1" => $result1,"part2" => $result2, "part3" => $result3]);
+    $result = $result1->concat($result3);
+
+
+    return response(["ebe1" => $result, "ebe2" => $result2]);
+});
+
+
+Route::get('fdettes_crences', function () {
+
+// Exécutez la requête initiale et récupérez les résultats
+// Exécutez la requête initiale et récupérez les résultats
+$results = DB::table('creances')
+    ->select(
+        'dtemps.ID_Temps AS ID_Temps',
+        'dentreprise_A.ID_Ent AS ID_Ent_A',
+        'dentreprise_B.ID_Ent AS ID_Ent_B',
+        DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") >= DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN SUM(creances.Montant - creances.montant_encaissement) ELSE 0 END AS Montant_Factures'),
+        DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") < DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN SUM(creances.Montant - creances.montant_encaissement) ELSE 0 END AS Montant_Creances'),
+        DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") >= DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN COUNT(creances.Montant) ELSE 0 END AS Nbr_Factures'),
+        DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") < DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN COUNT(creances.Montant) ELSE 0 END AS Nbr_Creances'),
+        DB::raw('0 AS Montant_Dettes'),
+        DB::raw('0 AS Nbr_Dettes'),
+        DB::raw('0 AS Creances_vs_Dettes')
+    )
+    ->join('dtemps', DB::raw("DATE_FORMAT(CURRENT_DATE(), '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps.DATE, '%Y-%m')"))
+    ->join('dentreprise AS dentreprise_A', 'creances.debtor_id', '=', 'dentreprise_A.ID_Ent')
+    ->join('dentreprise AS dentreprise_B', 'creances.creditor_id', '=', 'dentreprise_B.ID_Ent')
+    ->where('creances.regler', 0)
+    ->groupBy('dentreprise_A.ID_Ent', 'dentreprise_B.ID_Ent')
+    ->union(function ($query) {
+        $query->select(
+            'dtemps.ID_Temps AS ID_Temps',
+            'dentreprise_A.ID_Ent AS ID_Ent_A',
+            'dentreprise_B.ID_Ent AS ID_Ent_B',
+            DB::raw('0 AS Montant_Factures'),
+            DB::raw('0 AS Montant_Creances'),
+            DB::raw('0 AS Nbr_Factures'),
+            DB::raw('0 AS Nbr_Creances'),
+            DB::raw('SUM(dettes.Montant - dettes.montant_encaissement) AS Montant_Dettes'),
+            DB::raw('COUNT(dettes.Montant) AS Nbr_Dettes'),
+            DB::raw('0 AS Creances_vs_Dettes')
+        )
+        ->from('dettes')
+        ->join('dtemps', DB::raw("DATE_FORMAT(CURRENT_DATE(), '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps.DATE, '%Y-%m')"))
+        ->join('dentreprise AS dentreprise_A', 'dettes.debtor_id', '=', 'dentreprise_A.ID_Ent')
+        ->join('dentreprise AS dentreprise_B', 'dettes.creditor_id', '=', 'dentreprise_B.ID_Ent')
+        ->where('dettes.regler', 0)
+        ->groupBy('dentreprise_A.ID_Ent', 'dentreprise_B.ID_Ent');
+    })
+->groupBy('ID_Ent_A', 'ID_Ent_B')
+->get();
+
+
+// Tableau pour stocker les agrégats
+$aggregatedResults = [];
+
+// Parcourez les résultats
+foreach ($results as $result) {
+    $key = $result->ID_Ent_A . '_' . $result->ID_Ent_B . '_' . $result->ID_Temps;
+
+    $resultArray = json_decode(json_encode($result), true);
+    // Vérifie si la clé existe déjà dans le tableau des agrégats
+    if (isset($aggregatedResults[$key])) {
+        // Ajoute les valeurs agrégées aux résultats existants
+        $aggregatedResults[$key]->Montant_Factures += $result->Montant_Factures;
+        $aggregatedResults[$key]->Montant_Creances += $result->Montant_Creances;
+        $aggregatedResults[$key]->Nbr_Factures += $result->Nbr_Factures;
+        $aggregatedResults[$key]->Nbr_Creances += $result->Nbr_Creances;
+        $aggregatedResults[$key]->Montant_Dettes += $result->Montant_Dettes;
+        $aggregatedResults[$key]->Nbr_Dettes += $result->Nbr_Dettes;
+        $aggregatedResults[$key]->Creances_vs_Dettes = $aggregatedResults[$key]->Montant_Creances
+        - $aggregatedResults[$key]->Montant_Dettes;
+    } 
+    else {
+        // Crée une nouvelle entrée dans le tableau des agrégats
+        $aggregatedResults[$key] = (object) $resultArray;
+        $aggregatedResults[$key]->Montant_Factures = $result->Montant_Factures;
+        $aggregatedResults[$key]->Montant_Creances = $result->Montant_Creances;
+        $aggregatedResults[$key]->Nbr_Factures = $result->Nbr_Factures;
+        $aggregatedResults[$key]->Nbr_Creances = $result->Nbr_Creances;
+        $aggregatedResults[$key]->Montant_Dettes = $result->Montant_Dettes;
+        $aggregatedResults[$key]->Nbr_Dettes = $result->Nbr_Dettes;
+        $aggregatedResults[$key]->Creances_vs_Dettes = $result->Montant_Creances - $result->Montant_Dettes;      
+    }
+}
+
+// Convertit le tableau des agrégats en une liste de résultats
+$finalResults = array_values($aggregatedResults);
+// $results = $finalResults;
+
+$aggregatedResultsArray = json_decode(json_encode($aggregatedResults), true);
+
+$query = DB::table('fcreances_dettes')->insert($aggregatedResultsArray);
+if ($query) {
+    echo "Les données ont bien été transformées.";                             
+} else { 
+    echo "Une erreur s'est produite lors du chargement des données.";              
+}
+});
+
+
+
+Route::get('dash_creance_dettes', function () {
+
+    $results = DB::table('fcreances_dettes')
+    ->groupBy('ID_Ent_A', 'ID_Ent_B')
+    ->get();
+
+    $req = [];
+
+    for ($i = 1; $i < 19; $i++) {
+        for ($j = 1; $j < 19; $j++) {
+            $key = $i . '-' . $j;
+
+            $filteredResult = $results->where('ID_Ent_A', $i)->where('ID_Ent_B', $j)->first();
+
+            if ($filteredResult) {
+                $req[$key] = $filteredResult;
+
+            } else {
+                $req[$key] = (object) [
+                    'ID_Ent_A' => $i,
+                    'ID_Ent_B' => $j,
+                    'Montant_Factures' => 0,
+                    'Montant_Creances' => 0,
+                    'Nbr_Factures' => 0,
+                    'Nbr_Creances' => 0,
+                    'Montant_Dettes' => 0,
+                    'Nbr_Dettes' => 0,
+                    'Creances_vs_Dettes' => 0
+                ];
+            }
+        }
+    }
+
+    $finalResults = array_values($req);
+
+
+
+
+    return $finalResults;
 });
