@@ -26,7 +26,7 @@ class StoreDetteRequest extends FormRequest
             'intitule_projet' => 'required|string|max:55',
             'num_fact' => 'required|string|max:55',
             'num_situation' => 'required|string|max:55',
-            'date_dettes' => ['required','date','before:2023-04-22'],
+            'date_dettes' => ['required','date','before:today'],
             'observations' => 'string',
             'creditor_type' => [
                 'required',

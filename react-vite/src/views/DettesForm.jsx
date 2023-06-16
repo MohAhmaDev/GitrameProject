@@ -58,16 +58,16 @@ export default function DettesForm() {
 
 
 
-  const openForm = () => {
-    if (role === "admin") {
-      setShow(true)
-    }
-  }
+  // const openForm = () => {
+  //   if (role === "admin") {
+  //     setShow(true)
+  //   }
+  // }
   useEffect(() => {
     getFiliales()
     getEntreprises()
-    fetchUser(),
-    openForm()
+    fetchUser();
+    // openForm()
   }, [role])
 
 
@@ -78,10 +78,10 @@ export default function DettesForm() {
     num_situation: yup.string().required('ce champ est obligatoire'),
     date_dettes: yup.date().required('le champs date est obligatoire'),
     montant: yup.number().required('ce champ est obligatoire'),
-    debtor_type: selected?.debtor ? null : yup.string().required('le champs débiteur est obligatoire'),
-    creditor_type: selected?.creditor ? null : yup.string().required('le champ créditeur est obligatoire'),
-    debtor_id: selected?.debtor ? null: yup.number().required(),
-    creditor_id: selected?.creditor ? null : yup.number().required()
+    debtor_type: filiale.id ? null : yup.string().required('le champs débiteur est obligatoire'),
+    creditor_type: yup.string().required('le champ créditeur est obligatoire'),
+    debtor_id: filiale.id ? null : yup.number().required(),
+    creditor_id: yup.number().required()
   })
   const { handleSubmit, control, setError, reset, register, formState,
   formState: { errors } , setValue} = useForm({
@@ -155,10 +155,10 @@ export default function DettesForm() {
         num_situation: data.num_situation,
         date_dettes: dayjs(data.date_dettes).format("YYYY-MM-DD"),
         observations: data.observations,
-        creditor_type: selected?.creditor ? "filiale" : data.creditor_type,
-        creditor_id: selected?.creditor ? selected?.id : data.creditor_id,
-        debtor_type: selected?.debtor ? "filiale" : data.debtor_type,
-        debtor_id: selected?.debtor ? selected?.id : data.debtor_id,
+        creditor_type: data.creditor_type,
+        creditor_id: data.creditor_id,
+        debtor_type: filiale.id ? "filiale" : data.debtor_type,
+        debtor_id: filiale.id ? filiale.id : data.debtor_id,
         montant: data.montant,
         montant_encaissement: data.montant_encaissement,
         regler: data.regler
@@ -188,10 +188,10 @@ export default function DettesForm() {
         num_situation: data.num_situation,
         date_dettes: dayjs(data.date_dettes).format("YYYY-MM-DD"),
         observations: data.observations,
-        creditor_type: selected?.creditor ? "filiale" : data.creditor_type,
-        creditor_id: selected?.creditor ? selected?.id : data.creditor_id,
-        debtor_type: selected?.debtor ? "filiale" : data.debtor_type,
-        debtor_id: selected?.debtor ? selected?.id : data.debtor_id,
+        creditor_type:data.creditor_type,
+        creditor_id:data.creditor_id,
+        debtor_type: filiale.id ? "filiale" : data.debtor_type,
+        debtor_id: filiale.id ? filiale.id : data.debtor_id,
         montant: data.montant,
       }
       axiosClient.post('/dettes', detteAdd)
@@ -260,15 +260,15 @@ export default function DettesForm() {
   )
   
 
-  const ChoseRole = (e) => {
-    if (e === "creditor") {
-      setSelected({"creditor": true, "id": filiale?.id})
-    } 
-    if (e === "debtor") {
-      setSelected({"debtor": true, "id": filiale?.id})
-    }
-    setShow(true)
-  }
+  // const ChoseRole = (e) => {
+  //   if (e === "creditor") {
+  //     setSelected({"creditor": true, "id": filiale?.id})
+  //   } 
+  //   if (e === "debtor") {
+  //     setSelected({"debtor": true, "id": filiale?.id})
+  //   }
+  //   setShow(true)
+  // }
 
   const getDette = () => {
     setLoading(true)
@@ -299,6 +299,7 @@ export default function DettesForm() {
 
 if (id) {
   useEffect(() => {
+    fetchUser()
     getDette()
     console.log(dette)
     if ((Object.keys(dette).length !== 0)) {
@@ -309,7 +310,7 @@ if (id) {
 }
 
   return ( <>
-    {(filiale?.id && !show && !loading) && <div className="card animated fadeInDown">
+    {/* {(filiale?.id && !show && !loading) && <div className="card animated fadeInDown">
       <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="20px">
         <label style={{ gridColumn: "span 2" }}> {id ? "Modifier" : "Choisir" } le role  </label>    
         <FormControl sx={{ gridColumn: "span 2" }}>
@@ -322,8 +323,8 @@ if (id) {
           </Select>
         </FormControl>
       </Box>
-    </div>}
-    {(show && !loading) && 
+    </div>} */}
+    {(!loading) && 
     <div className="card animated fadeInDown">
       <Box m="20px">
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -363,10 +364,9 @@ if (id) {
               {creditor}
             </Zoom>
           </Box>
-          <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))"
+          {(role === "admin") && <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))"
             gap="20px"    
             sx={{ display: selected?.debtor ? 'none' : "grid" }}   
-
           >
             <FormLabel> oranisme: débitrice </FormLabel>
             <FormControlLabel
@@ -399,7 +399,7 @@ if (id) {
               display: checkedTwo ? null : 'none'}}>
               {debtor}
             </Zoom>
-          </Box>
+          </Box>}
           <Box 
             m="50px"
             display="grid" 

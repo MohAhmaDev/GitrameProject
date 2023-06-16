@@ -932,7 +932,7 @@ Route::get('addFormation', function () {
 
 Route::get('finance_dashboard', function () {
 
-    $year = 2016;
+    $year = null;
     $filiale = "";
 
     $test = DB::table('ffinance')
@@ -1001,6 +1001,32 @@ Route::get('finance_dashboard', function () {
     $EBE = $resultats->where('Agregat_calculer', 'calc')->first();
     $va = [];
 
+    $request_ = DB::table('ffinance')
+    ->join('dagregats', 'ffinance.ID_Agregats', '=', 'dagregats.ID_Agregats')
+    ->join('dtemps', 'ffinance.ID_Date_Agregats', '=', 'dtemps.ID_Temps')
+    ->select(
+        DB::raw('ffinance.taux_Realisation * 100 AS taux'),
+        DB::raw('SUM(Montant_Realisation) AS Montant_Realisation'),
+        DB::raw('SUM(Montant_Privision) AS Montant_Privision'),
+        DB::raw('SUM(Ecart_Valeur) AS Ecart_Valeur'),
+        DB::raw("CASE
+            WHEN dagregats.agregats = 'Charges de personnel' THEN 'charge'
+            WHEN dagregats.agregats = 'Impots, taxes et versements assimiles' THEN 'impots'
+            ELSE '+++'
+        END AS Agregat_calculer")
+    )
+    ->groupBy('Agregat_calculer')
+    ->get();
+
+    $charge = $request_->where('Agregat_calculer', 'charge')->first();
+    $impot = $request_->where('Agregat_calculer', 'impots')->first();
+    $maitrise_consomation = [];
+    $marge_operationnelle = [];
+    $taux_marge = [];
+    $taux_va = [];
+    $va_etats = [];
+    $va_salarier = [];
+
 
     if ($Chiffre_affaire && $Production_Periode) {
         $ca1 = intval($Chiffre_affaire->Montant_Realisation);
@@ -1025,6 +1051,19 @@ Route::get('finance_dashboard', function () {
         $Chiffre_affaire["Ecart_Valeur"] = "-";
         $Chiffre_affaire["Agregat_calculer"] = 'Chiffre d\'affaires';
         $Chiffre_affaire["taux"] = "-";
+
+        $maitrise_consomation["Montant_Realisation"] = "-";
+        $maitrise_consomation["Montant_Privision"] = "-";
+        $maitrise_consomation["Ecart_Valeur"] = "-";
+        $maitrise_consomation["Agregat_calculer"] = 'maitrise de consomation';
+        $maitrise_consomation["taux"] = "-";
+
+        $taux_va["Montant_Realisation"] = "-";
+        $taux_va["Montant_Privision"] = "-";
+        $taux_va["Ecart_Valeur"] = "-";
+        $taux_va["Agregat_calculer"] = 'taux de va';
+        $taux_va["taux"] = "-";
+
     } else {
         $pp1 = intval($Chiffre_affaire->Montant_Realisation);
         $pp2 = intval($Chiffre_affaire->Montant_Privision);
@@ -1043,24 +1082,70 @@ Route::get('finance_dashboard', function () {
         $pp1 = intval($Production_Periode->Montant_Realisation);
         $pp2 = intval($Production_Periode->Montant_Privision);
 
-        $pp1 -= $cp1;
-        $pp2 -= $cp2;
-        if ($pp2 < 0) {
-            $Ecart_Valeur = $pp1 + $pp2;
+        $mp1 = $pp1 - $cp1;
+        $mp2 = $pp2 - $cp2;
+        if ($mp1 < 0) {
+            $Ecart_Valeur1 = $mp1 + $mp2;
         } else {
-            $Ecart_Valeur = $pp1 - $pp2;
+            $Ecart_Valeur1 = $mp1 - $mp2;
         }
-        $va["Montant_Realisation"] = $pp1;
-        $va["Montant_Privision"] = $pp2;
-        $va["Ecart_Valeur"]= $Ecart_Valeur;
+
+        $taux = round(abs(floatval($mp1 / $mp2)) * 100, 2);
+        $va["Montant_Realisation"] = $mp1;
+        $va["Montant_Privision"] = $mp2;
+        $va["Ecart_Valeur"]= $Ecart_Valeur1;
         $va["Agregat_calculer"] = "Valeur Ajoute";
-        $va["taux"] = round(abs(floatval($pp1 / $pp2)) * 100, 2);
+        $va["taux"] = round(abs(floatval($mp1 / $mp2)) * 100, 2);
+
+        $maitrise_consomation['Montant_Realisation'] = round(($va['Montant_Realisation'] / $pp1), 2);
+        $maitrise_consomation['Montant_Privision'] = round(($va['Montant_Privision'] / $pp2), 2);
+        $maitrise_consomation['Ecart_Valeur'] = round(($va['Ecart_Valeur'] / $Ecart_Valeur), 2);
+        $maitrise_consomation['Agregat_calculer'] = "maitrise de consomation";
+        $maitrise_consomation['taux'] = round(($va['taux'] / $taux), 2); 
+        
+        if (!$taux_va) {
+            $ca1 = $Chiffre_affaire->Montant_Realisation;
+            $ca2 = $Chiffre_affaire->Montant_Privision;
+            $ca3 = $Chiffre_affaire->Ecart_Valeur;
+            $ca4 = $Chiffre_affaire->taux;
+    
+            $taux_va['Montant_Realisation'] = round(($va["Montant_Realisation"]/$ca1), 2);
+            $taux_va['Montant_Privision'] = round(($va["Montant_Privision"]/$ca2), 2);
+            $taux_va['Ecart_Valeur'] = round(($va["Ecart_Valeur"]/$ca3), 2);
+            $taux_va['Agregat_calculer'] = "taux de va";
+            $taux_va['taux'] = round(($va["taux"]/$ca4), 2); 
+        }
+
     } else {
         $va["Montant_Realisation"] = "-";
         $va["Montant_Privision"] = "-";
         $va["Ecart_Valeur"] = "-";
         $va["Agregat_calculer"] = "Valeur Ajoute";
         $va["taux"] = "-";
+
+        $maitrise_consomation['Montant_Realisation'] = '-';
+        $maitrise_consomation['Montant_Privision'] = '-';
+        $maitrise_consomation['Ecart_Valeur'] = '-';
+        $maitrise_consomation['Agregat_calculer'] = "maitrise de consomation";
+        $maitrise_consomation['taux'] = '-';   
+
+        $taux_va['Montant_Realisation'] = '-';
+        $taux_va['Montant_Privision'] = '-';
+        $taux_va['Ecart_Valeur'] = '-';
+        $taux_va['Agregat_calculer'] = "taux de va";
+        $taux_va['taux'] = '-';  
+
+        $va_salarier['Montant_Realisation'] = "-";
+        $va_salarier['Montant_Privision'] = "-";
+        $va_salarier['Ecart_Valeur'] = "-";
+        $va_salarier['Agregat_calculer'] = "va des salriers";
+        $va_salarier['taux'] = "-"; 
+
+        $va_etats['Montant_Realisation'] = "-";
+        $va_etats['Montant_Privision'] = "-";
+        $va_etats['Ecart_Valeur'] = "-";
+        $va_etats['Agregat_calculer'] = "va des salriers";
+        $va_etats['taux'] = "-";  
     }
 
     if (!$Consommation_Periode) {
@@ -1114,32 +1199,102 @@ Route::get('finance_dashboard', function () {
             $Ecart_Valeur = $pp1 - $pp2;
         }        
         // $EBE = $Ecart_Valeur - $pp2;
+        $taux = round(floatval($pp1 / $pp2) * 100, 2);
 
         $EBE->Montant_Realisation = $pp1;
         $EBE->Montant_Privision = $pp2;
         $EBE->Ecart_Valeur = $Ecart_Valeur;
         $EBE->Agregat_calculer = "EBE";
-        $EBE->taux = round(floatval($pp1 / $pp2) * 100, 2);        
+        $EBE->taux = round(floatval($pp1 / $pp2) * 100, 2);
+        
+        $taux_marge['Montant_Realisation'] = round(($pp1 / $va['Montant_Realisation']), 2);
+        $taux_marge['Montant_Privision'] = round(($pp2 / $va['Montant_Privision']), 2);
+        $taux_marge['Ecart_Valeur'] = round(($Ecart_Valeur / $va['Ecart_Valeur']), 2);
+        $taux_marge['Agregat_calculer'] = "taux de marge";
+        $taux_marge['taux'] = round(($taux / $va['taux'] ), 2);    
+
+        if (!$marge_operationnelle) {
+            $ca1 = $Chiffre_affaire->Montant_Realisation;
+            $ca2 = $Chiffre_affaire->Montant_Privision;
+            $ca3 = $Chiffre_affaire->Ecart_Valeur;
+            $ca4 = $Chiffre_affaire->taux;  
+
+            $marge_operationnelle['Montant_Realisation'] = round(($pp1/$ca1), 2);
+            $marge_operationnelle['Montant_Privision'] = round(($pp2/$ca2), 2);
+            $marge_operationnelle['Ecart_Valeur'] = round(($Ecart_Valeur/$ca3), 2);
+            $marge_operationnelle['Agregat_calculer'] = "marge operationnelle";
+            $marge_operationnelle['taux'] = round(($taux/$ca4), 2); 
+        }
     } 
     else {
         $EBE["Montant_Realisation"] = $va["Montant_Realisation"] ;
         $EBE["Montant_Privision"] = $va["Montant_Privision"] ;
         $EBE["Ecart_Valeur"] = $va["Ecart_Valeur"];
         $EBE["Agregat_calculer"] = "EBE";
-        $EBE["taux"] = $va["taux"];        
+        $EBE["taux"] = $va["taux"];  
+
+        if (!$marge_operationnelle) {
+            $ca1 = $Chiffre_affaire->Montant_Realisation;
+            $ca2 = $Chiffre_affaire->Montant_Privision;
+            $ca3 = $Chiffre_affaire->Ecart_Valeur;
+            $ca4 = $Chiffre_affaire->taux;
+    
+            $marge_operationnelle['Montant_Realisation'] = round(($va["Montant_Realisation"]/$ca1), 2);
+            $marge_operationnelle['Montant_Privision'] = round(($va["Montant_Privision"]/$ca2), 2);
+            $marge_operationnelle['Ecart_Valeur'] = round(($va["Ecart_Valeur"]/$ca3), 2);
+            $marge_operationnelle['Agregat_calculer'] = "marge operationnelle";
+            $marge_operationnelle['taux'] = round(($va["taux"]/$ca4), 2); 
+        }
+        
+        $taux_marge['Montant_Realisation'] = 1;
+        $taux_marge['Montant_Privision'] = 1;
+        $taux_marge['Ecart_Valeur'] = 1;
+        $taux_marge['Agregat_calculer'] = "taux de marge";
+        $taux_marge['taux'] = 1;
+    }
+
+    if ($charge && $va && !$va_salarier) {
+        $c1 = $charge->Montant_Realisation;
+        $c2 = $charge->Montant_Privision;
+        $c3 = $charge->Ecart_Valeur;
+        $c4 = $charge->taux;
+
+        $va_salarier['Montant_Realisation'] = round(($c1/$va["Montant_Realisation"]), 2);
+        $va_salarier['Montant_Privision'] = round(($c2/$va["Montant_Privision"]/$ca2), 2);
+        $va_salarier['Ecart_Valeur'] = round(($c3/$va["Ecart_Valeur"]/$ca3), 2);
+        $va_salarier['Agregat_calculer'] = "va des salariers";
+        $va_salarier['taux'] = round(($c4/$va["taux"]), 2); 
+    } else {
+        $va_salarier['Montant_Realisation'] = "-";
+        $va_salarier['Montant_Privision'] = "-";
+        $va_salarier['Ecart_Valeur'] = "-";
+        $va_salarier['Agregat_calculer'] = "va des salriers";
+        $va_salarier['taux'] = "-"; 
+    }
+
+    if ($impot && $va && !$va_etats) {
+        $c1 = $impot->Montant_Realisation;
+        $c2 = $impot->Montant_Privision;
+        $c3 = $impot->Ecart_Valeur;
+        $c4 = $impot->taux;
+
+        $va_etats['Montant_Realisation'] = round(($c1/$va["Montant_Realisation"]), 2);
+        $va_etats['Montant_Privision'] = round(($c2/$va["Montant_Privision"]/$ca2), 2);
+        $va_etats['Ecart_Valeur'] = round(($c3/$va["Ecart_Valeur"]/$ca3), 2);
+        $va_etats['Agregat_calculer'] = "va des salariers";
+        $va_etats['taux'] = round(($c4/$va["taux"]), 2); 
+    } else {
+        $va_etats['Montant_Realisation'] = "-";
+        $va_etats['Montant_Privision'] = "-";
+        $va_etats['Ecart_Valeur'] = "-";
+        $va_etats['Agregat_calculer'] = "va des salriers";
+        $va_etats['taux'] = "-"; 
     }
 
 
-
-    // return response([$Production_Periode, $Consommation_Periode, $Chiffre_affaire, $va, $EBE]);
-    $years = DB::table('finances')
-    ->select(DB::raw("DISTINCT(DATE_FORMAT(finances.date_activite, '%Y')) as year"))
-    ->orderBy(DB::raw("(DATE_FORMAT(finances.date_activite, '%Y'))"), 'ASC')
-    ->get();
-
-
-
-    return response([$Production_Periode, $Consommation_Periode, $Chiffre_affaire, $va, $EBE]);
+    return response([$Production_Periode,
+     $Consommation_Periode, $Chiffre_affaire, $va, $EBE, $taux_marge, $maitrise_consomation,
+    $va_etats, $va_salarier, $marge_operationnelle, $taux_va]);
 
 });
 
@@ -1332,9 +1487,168 @@ Route::get('dash_creance_dettes', function () {
     }
 
     $finalResults = array_values($req);
-
-
-
-
     return $finalResults;
+});
+
+
+
+Route::get('test_finance', function () {
+
+    $results = DB::table('ffinance')
+    ->join('dtemps', 'ffinance.ID_Date_Agregats', '=', 'dtemps.ID_Temps')
+    ->join('dagregats', 'ffinance.ID_Agregats', '=', 'dagregats.ID_Agregats')
+    ->select(DB::raw('dtemps.Annee AS ANNEE, dagregats.Type_Agregats AS TYPE_A, ffinance.taux_Realisation * 100 as taux'))
+    ->groupBy('ANNEE', 'TYPE_A')
+    ->get();
+
+    $dataArray = json_decode($results, true);
+    // Initialiser le tableau final
+    $result = [];
+    $allYears = range(2016, 2023);
+
+
+    // Parcourir le tableau associatif
+    foreach ($dataArray as $item) {
+        // Récupérer les informations importantes
+        $id = $item["TYPE_A"];
+        $x = $item["ANNEE"];
+        $y = $item["taux"];
+
+        // Définir la couleur en fonction de l'identifiant
+        switch ($id) {
+            case "vente":
+                $color = "rgb(244, 117, 96)";
+                break;
+            case "consomation":
+                $color = "rgb(241, 225, 91)";
+                break;
+            case "production":
+                $color = "rgb(232, 193, 160)";
+                break;
+            case "autre":
+                $color = "rgb(131, 109, 90)";
+                break;
+            default:
+                $color = "rgb(0, 0, 0)";
+                break;
+        }
+
+        // Vérifier si l'identifiant existe déjà dans le tableau final
+        $key = array_search($id, array_column($result, "id"));
+        if ($key !== false) {
+            // Ajouter les données à l'élément existant
+            $data = ["x" => $x, "y" => $y];
+            array_push($result[$key]["data"], $data);
+        } else {
+            // Ajouter un nouvel élément au tableau final
+            $element = ["id" => $id, "color" => $color, "data" => []];
+    
+            // Remplir les données pour toutes les années entre 2016 et 2023
+            foreach ($allYears as $year) {
+                // Vérifier si l'année existe dans les données récupérées
+                if ($results->where('TYPE_A', $id)->where('ANNEE', $year)->all() !== []) {
+                    // Ajouter la valeur réelle pour l'année correspondante
+                    if ($year === $x) {
+                        $data = ["x" => $year, "y" => $y];
+                        array_push($element["data"], $data);
+                    }
+                } else {
+                    // Ajouter la valeur 0 pour les années manquantes
+                    $data = ["x" => $year, "y" => 0];
+
+                    if (!in_array($element["data"], $data)) {
+                        array_push($element["data"], $data);
+                    }
+                }
+                
+            }
+            // Ajouter l'élément au tableau final
+            array_push($result, $element);
+        }
+    }
+
+    // Transformer le tableau final en chaîne JSON
+    $resultJson = json_encode($result);
+    // Afficher le résultat
+    return $result;
+    // 16 / 18 / 19 / 22 / 23
+
+    /*
+    
+    $data = ["x" => 2018, "y" => 0];
+    $tab = collect($result)->where("id", "autre")->pluck('data')[0];
+    $bool = in_array($data, $tab);    
+    */
+});
+
+
+Route::get('RHS', function () {
+    $NBEmployes = DB::table('femploye')
+        ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'))
+        ->get();
+    return $NBEmployes;
+
+});
+
+
+
+
+Route::get("UpdateFemploye", function () {
+
+
+    $timestemp = DB::table('controller_stamp')->max('last_timp_stamp');
+    $lastTimestamp = DB::table('employes')->max('updated_at');
+
+   
+    $results = DB::table('employes')
+        ->join('dsexe', 'dsexe.Sexe', '=', 'employes.sexe')
+        ->join('dhandicap', 'dhandicap.Handicap', '=', 'employes.handicape')
+        ->join('dfonction', 'dfonction.Fonction', '=', 'employes.fonction')
+        ->join('filiales', 'employes.filiale_id', '=', 'filiales.id')
+        ->join('dentreprise', 'filiales.nom_filiale', '=', 'dentreprise.Nom_Ent')
+        ->join('dtemps_travail', 'dtemps_travail.Temps_Travail', '=', 'employes.temp_occuper')
+        ->join('dcontrat', 'dcontrat.Type_Contrat', '=', 'employes.contract')
+        ->join('dscociopro', 'dscociopro.Scocipro', '=', 'employes.categ_sociopro')
+        ->join('dtemps as dtemps_cra', DB::raw("DATE_FORMAT(employes.created_at, '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps_cra.DATE, '%Y-%m')"))
+        ->join('dtemps as dtemps_rec', DB::raw("DATE_FORMAT(employes.date_recrutement, '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps_rec.DATE, '%Y-%m')"))
+        ->leftJoin('dtemps AS dtemps_ret', function ($join) {
+            $join->on(DB::raw("DATE_FORMAT(employes.date_retraite, '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps_ret.DATE, '%Y-%m')"))
+                ->orWhere(function ($query) {
+                    $query->whereNull('employes.date_retraite')
+                        ->where('dtemps_ret.ID_Temps', '=', 2413);
+                });
+        })
+        ->select(
+                'dtemps_cra.ID_Temps as ID_Temps',
+                'dtemps_rec.ID_Temps as ID_Date_Recrutement',
+                DB::raw('COALESCE(dtemps_ret.ID_Temps, 2413) as ID_Date_Retraite'),
+                'dsexe.ID_Sexe as ID_Sexe',
+                'dhandicap.ID_Handicap as ID_Handicap',
+                'dfonction.ID_Fonction as ID_Fonction',
+                'dentreprise.ID_Ent as ID_Ent',
+                'dtemps_travail.ID_Temps_Trav as ID_Temps_Trav',
+                'dcontrat.ID_Contrat as ID_Contrat',
+                'dscociopro.ID_scociopro AS ID_scociopro',
+                DB::raw('CASE
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) <= 20 THEN 1
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 21 AND 25 THEN 2 
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 21 AND 25 THEN 3
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 26 AND 30 THEN 4
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 31 AND 35 THEN 5
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 36 AND 40 THEN 6
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 41 AND 45 THEN 7
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 46 AND 50 THEN 8
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 51 AND 55 THEN 9
+                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 56 AND 60 THEN 10
+                    ELSE 11
+                END AS ID_Age',),
+                DB::raw('COUNT(employes.id) as Nombre_Eff')
+            )
+            ->where('employes.updated_at','>', $timestemp)
+            ->groupBy('ID_Temps', 'ID_Date_Recrutement', 'ID_Date_Retraite', 'ID_Fonction', 'ID_Sexe', 'ID_Handicap', 'ID_Ent', 'ID_Temps_Trav', 'ID_Contrat', 'ID_Age')
+            ->get();
+   
+
+        
+        return $results;
 });

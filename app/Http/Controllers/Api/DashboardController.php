@@ -75,6 +75,8 @@ class DashboardController extends Controller
         $dataArray = json_decode($results, true);
         // Initialiser le tableau final
         $result = [];
+        $allYears = range(2016, 2023);
+    
     
         // Parcourir le tableau associatif
         foreach ($dataArray as $item) {
@@ -110,8 +112,28 @@ class DashboardController extends Controller
                 array_push($result[$key]["data"], $data);
             } else {
                 // Ajouter un nouvel élément au tableau final
-                $data = ["x" => $x, "y" => $y];
-                $element = ["id" => $id, "color" => $color, "data" => [$data]];
+                $element = ["id" => $id, "color" => $color, "data" => []];
+        
+                // Remplir les données pour toutes les années entre 2016 et 2023
+                foreach ($allYears as $year) {
+                    // Vérifier si l'année existe dans les données récupérées
+                    if ($results->where('TYPE_A', $id)->where('ANNEE', $year)->all() !== []) {
+                        // Ajouter la valeur réelle pour l'année correspondante
+                        if ($year === $x) {
+                            $data = ["x" => $year, "y" => $y];
+                            array_push($element["data"], $data);
+                        }
+                    } else {
+                        // Ajouter la valeur 0 pour les années manquantes
+                        $data = ["x" => $year, "y" => 100];
+    
+                        if (!in_array($element["data"], $data)) {
+                            array_push($element["data"], $data);
+                        }
+                    }
+                    
+                }
+                // Ajouter l'élément au tableau final
                 array_push($result, $element);
             }
         }
@@ -150,6 +172,7 @@ class DashboardController extends Controller
                 ELSE 'autre'
             END AS Agregat_calculer")
         );
+
     
         $resultats = $test
         ->groupBy('Agregat_calculer')
@@ -176,11 +199,39 @@ class DashboardController extends Controller
             }
         }
     
+
         $Chiffre_affaire = $resultats->where('Agregat_calculer', 'Chiffre d\'affaires')->first();
         $Production_Periode = $resultats->where('Agregat_calculer', 'production')->first();
         $Consommation_Periode = $resultats->where('Agregat_calculer', 'Consommations de la periode')->first();
         $EBE = $resultats->where('Agregat_calculer', 'calc')->first();
         $va = [];
+    
+        $request_ = DB::table('ffinance')
+        ->join('dagregats', 'ffinance.ID_Agregats', '=', 'dagregats.ID_Agregats')
+        ->join('dtemps', 'ffinance.ID_Date_Agregats', '=', 'dtemps.ID_Temps')
+        ->select(
+            DB::raw('ffinance.taux_Realisation * 100 AS taux'),
+            DB::raw('SUM(Montant_Realisation) AS Montant_Realisation'),
+            DB::raw('SUM(Montant_Privision) AS Montant_Privision'),
+            DB::raw('SUM(Ecart_Valeur) AS Ecart_Valeur'),
+            DB::raw("CASE
+                WHEN dagregats.agregats = 'Charges de personnel' THEN 'charge'
+                WHEN dagregats.agregats = 'Impots, taxes et versements assimiles' THEN 'impots'
+                ELSE '+++'
+            END AS Agregat_calculer")
+        )
+        ->groupBy('Agregat_calculer')
+        ->get();
+    
+        $charge = $request_->where('Agregat_calculer', 'charge')->first();
+        $impot = $request_->where('Agregat_calculer', 'impots')->first();
+        $maitrise_consomation = [];
+        $marge_operationnelle = [];
+        $taux_marge = [];
+        $taux_va = [];
+        $va_etats = [];
+        $va_salarier = [];
+    
     
         if ($Chiffre_affaire && $Production_Periode) {
             $ca1 = intval($Chiffre_affaire->Montant_Realisation);
@@ -205,6 +256,19 @@ class DashboardController extends Controller
             $Chiffre_affaire["Ecart_Valeur"] = "-";
             $Chiffre_affaire["Agregat_calculer"] = 'Chiffre d\'affaires';
             $Chiffre_affaire["taux"] = "-";
+    
+            $maitrise_consomation["Montant_Realisation"] = "-";
+            $maitrise_consomation["Montant_Privision"] = "-";
+            $maitrise_consomation["Ecart_Valeur"] = "-";
+            $maitrise_consomation["Agregat_calculer"] = 'maitrise de consomation';
+            $maitrise_consomation["taux"] = "-";
+    
+            $taux_va["Montant_Realisation"] = "-";
+            $taux_va["Montant_Privision"] = "-";
+            $taux_va["Ecart_Valeur"] = "-";
+            $taux_va["Agregat_calculer"] = 'taux de va';
+            $taux_va["taux"] = "-";
+    
         } else {
             $pp1 = intval($Chiffre_affaire->Montant_Realisation);
             $pp2 = intval($Chiffre_affaire->Montant_Privision);
@@ -223,24 +287,70 @@ class DashboardController extends Controller
             $pp1 = intval($Production_Periode->Montant_Realisation);
             $pp2 = intval($Production_Periode->Montant_Privision);
     
-            $pp1 -= $cp1;
-            $pp2 -= $cp2;
-            if ($pp2 < 0) {
-                $Ecart_Valeur = $pp1 + $pp2;
+            $mp1 = $pp1 - $cp1;
+            $mp2 = $pp2 - $cp2;
+            if ($mp1 < 0) {
+                $Ecart_Valeur1 = $mp1 + $mp2;
             } else {
-                $Ecart_Valeur = $pp1 - $pp2;
+                $Ecart_Valeur1 = $mp1 - $mp2;
             }
-            $va["Montant_Realisation"] = $pp1;
-            $va["Montant_Privision"] = $pp2;
-            $va["Ecart_Valeur"]= $Ecart_Valeur;
+    
+            $taux = round(abs(floatval($mp1 / $mp2)) * 100, 2);
+            $va["Montant_Realisation"] = $mp1;
+            $va["Montant_Privision"] = $mp2;
+            $va["Ecart_Valeur"]= $Ecart_Valeur1;
             $va["Agregat_calculer"] = "Valeur Ajoute";
-            $va["taux"] = round(abs(floatval($pp1 / $pp2)) * 100, 2);
+            $va["taux"] = round(abs(floatval($mp1 / $mp2)) * 100, 2);
+    
+            $maitrise_consomation['Montant_Realisation'] = round(($va['Montant_Realisation'] / $pp1), 2);
+            $maitrise_consomation['Montant_Privision'] = round(($va['Montant_Privision'] / $pp2), 2);
+            $maitrise_consomation['Ecart_Valeur'] = round(($va['Ecart_Valeur'] / $Ecart_Valeur), 2);
+            $maitrise_consomation['Agregat_calculer'] = "maitrise de consomation";
+            $maitrise_consomation['taux'] = round(($va['taux'] / $taux), 2); 
+            
+            if (!$taux_va) {
+                $ca1 = $Chiffre_affaire->Montant_Realisation;
+                $ca2 = $Chiffre_affaire->Montant_Privision;
+                $ca3 = $Chiffre_affaire->Ecart_Valeur;
+                $ca4 = $Chiffre_affaire->taux;
+        
+                $taux_va['Montant_Realisation'] = round(($va["Montant_Realisation"]/$ca1), 2);
+                $taux_va['Montant_Privision'] = round(($va["Montant_Privision"]/$ca2), 2);
+                $taux_va['Ecart_Valeur'] = round(($va["Ecart_Valeur"]/$ca3), 2);
+                $taux_va['Agregat_calculer'] = "taux de va";
+                $taux_va['taux'] = round(($va["taux"]/$ca4), 2); 
+            }
+    
         } else {
             $va["Montant_Realisation"] = "-";
             $va["Montant_Privision"] = "-";
             $va["Ecart_Valeur"] = "-";
             $va["Agregat_calculer"] = "Valeur Ajoute";
             $va["taux"] = "-";
+    
+            $maitrise_consomation['Montant_Realisation'] = '-';
+            $maitrise_consomation['Montant_Privision'] = '-';
+            $maitrise_consomation['Ecart_Valeur'] = '-';
+            $maitrise_consomation['Agregat_calculer'] = "maitrise de consomation";
+            $maitrise_consomation['taux'] = '-';   
+    
+            $taux_va['Montant_Realisation'] = '-';
+            $taux_va['Montant_Privision'] = '-';
+            $taux_va['Ecart_Valeur'] = '-';
+            $taux_va['Agregat_calculer'] = "taux de va";
+            $taux_va['taux'] = '-';  
+    
+            $va_salarier['Montant_Realisation'] = "-";
+            $va_salarier['Montant_Privision'] = "-";
+            $va_salarier['Ecart_Valeur'] = "-";
+            $va_salarier['Agregat_calculer'] = "va des salriers";
+            $va_salarier['taux'] = "-"; 
+    
+            $va_etats['Montant_Realisation'] = "-";
+            $va_etats['Montant_Privision'] = "-";
+            $va_etats['Ecart_Valeur'] = "-";
+            $va_etats['Agregat_calculer'] = "va des salriers";
+            $va_etats['taux'] = "-";  
         }
     
         if (!$Consommation_Periode) {
@@ -293,23 +403,104 @@ class DashboardController extends Controller
             } else {
                 $Ecart_Valeur = $pp1 - $pp2;
             }        
+            // $EBE = $Ecart_Valeur - $pp2;
+            $taux = round(floatval($pp1 / $pp2) * 100, 2);
+    
             $EBE->Montant_Realisation = $pp1;
             $EBE->Montant_Privision = $pp2;
             $EBE->Ecart_Valeur = $Ecart_Valeur;
             $EBE->Agregat_calculer = "EBE";
-            $EBE->taux = round(floatval($pp1 / $pp2) * 100, 2);        
+            $EBE->taux = round(floatval($pp1 / $pp2) * 100, 2);
+            
+            $taux_marge['Montant_Realisation'] = round(($pp1 / $va['Montant_Realisation']), 2);
+            $taux_marge['Montant_Privision'] = round(($pp2 / $va['Montant_Privision']), 2);
+            $taux_marge['Ecart_Valeur'] = round(($Ecart_Valeur / $va['Ecart_Valeur']), 2);
+            $taux_marge['Agregat_calculer'] = "taux de marge";
+            $taux_marge['taux'] = round(($taux / $va['taux'] ), 2);    
+    
+            if (!$marge_operationnelle) {
+                $ca1 = $Chiffre_affaire->Montant_Realisation;
+                $ca2 = $Chiffre_affaire->Montant_Privision;
+                $ca3 = $Chiffre_affaire->Ecart_Valeur;
+                $ca4 = $Chiffre_affaire->taux;  
+    
+                $marge_operationnelle['Montant_Realisation'] = round(($pp1/$ca1), 2);
+                $marge_operationnelle['Montant_Privision'] = round(($pp2/$ca2), 2);
+                $marge_operationnelle['Ecart_Valeur'] = round(($Ecart_Valeur/$ca3), 2);
+                $marge_operationnelle['Agregat_calculer'] = "marge operationnelle";
+                $marge_operationnelle['taux'] = round(($taux/$ca4), 2); 
+            }
         } 
         else {
             $EBE["Montant_Realisation"] = $va["Montant_Realisation"] ;
             $EBE["Montant_Privision"] = $va["Montant_Privision"] ;
             $EBE["Ecart_Valeur"] = $va["Ecart_Valeur"];
             $EBE["Agregat_calculer"] = "EBE";
-            $EBE["taux"] = $va["taux"];        
+            $EBE["taux"] = $va["taux"];  
+    
+            if (!$marge_operationnelle) {
+                $ca1 = $Chiffre_affaire->Montant_Realisation;
+                $ca2 = $Chiffre_affaire->Montant_Privision;
+                $ca3 = $Chiffre_affaire->Ecart_Valeur;
+                $ca4 = $Chiffre_affaire->taux;
+        
+                $marge_operationnelle['Montant_Realisation'] = round(($va["Montant_Realisation"]/$ca1), 2);
+                $marge_operationnelle['Montant_Privision'] = round(($va["Montant_Privision"]/$ca2), 2);
+                $marge_operationnelle['Ecart_Valeur'] = round(($va["Ecart_Valeur"]/$ca3), 2);
+                $marge_operationnelle['Agregat_calculer'] = "marge operationnelle";
+                $marge_operationnelle['taux'] = round(($va["taux"]/$ca4), 2); 
+            }
+            
+            $taux_marge['Montant_Realisation'] = 1;
+            $taux_marge['Montant_Privision'] = 1;
+            $taux_marge['Ecart_Valeur'] = 1;
+            $taux_marge['Agregat_calculer'] = "taux de marge";
+            $taux_marge['taux'] = 1;
         }
     
-        return response([$Production_Periode, $Consommation_Periode, $Chiffre_affaire, $va, $EBE]);
+        if ($charge && $va && !$va_salarier) {
+            $c1 = $charge->Montant_Realisation;
+            $c2 = $charge->Montant_Privision;
+            $c3 = $charge->Ecart_Valeur;
+            $c4 = $charge->taux;
     
-
+            $va_salarier['Montant_Realisation'] = round(($c1/$va["Montant_Realisation"]), 2);
+            $va_salarier['Montant_Privision'] = round(($c2/$va["Montant_Privision"]/$ca2), 2);
+            $va_salarier['Ecart_Valeur'] = round(($c3/$va["Ecart_Valeur"]/$ca3), 2);
+            $va_salarier['Agregat_calculer'] = "va des salariers";
+            $va_salarier['taux'] = round(($c4/$va["taux"]), 2); 
+        } else {
+            $va_salarier['Montant_Realisation'] = "-";
+            $va_salarier['Montant_Privision'] = "-";
+            $va_salarier['Ecart_Valeur'] = "-";
+            $va_salarier['Agregat_calculer'] = "va des salriers";
+            $va_salarier['taux'] = "-"; 
+        }
+    
+        if ($impot && $va && !$va_etats) {
+            $c1 = $impot->Montant_Realisation;
+            $c2 = $impot->Montant_Privision;
+            $c3 = $impot->Ecart_Valeur;
+            $c4 = $impot->taux;
+    
+            $va_etats['Montant_Realisation'] = round(($c1/$va["Montant_Realisation"]), 2);
+            $va_etats['Montant_Privision'] = round(($c2/$va["Montant_Privision"]/$ca2), 2);
+            $va_etats['Ecart_Valeur'] = round(($c3/$va["Ecart_Valeur"]/$ca3), 2);
+            $va_etats['Agregat_calculer'] = "va des salariers";
+            $va_etats['taux'] = round(($c4/$va["taux"]), 2); 
+        } else {
+            $va_etats['Montant_Realisation'] = "-";
+            $va_etats['Montant_Privision'] = "-";
+            $va_etats['Ecart_Valeur'] = "-";
+            $va_etats['Agregat_calculer'] = "va des salriers";
+            $va_etats['taux'] = "-"; 
+        }
+    
+    
+        return response([$Production_Periode,
+         $Consommation_Periode, $Chiffre_affaire, $va, $EBE, $taux_marge, $maitrise_consomation,
+        $va_etats, $va_salarier, $marge_operationnelle, $taux_va]);
+    
 
     }
 
@@ -346,6 +537,12 @@ class DashboardController extends Controller
         ->groupBy('gestion_ressource')
         ->get();
 
+        $NBEmployes = DB::table('femploye')
+        ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'));
+
+        $req04 = $NBEmployes
+        ->get();
+
         if (!empty($year) && !empty($filiale)) {
             $req01 = $res01
             ->where('dtemps.annee', $year)
@@ -364,6 +561,12 @@ class DashboardController extends Controller
             ->where('femploye.ID_Ent', $filiale)
             ->groupBy('gestion_ressource')
             ->get();
+
+            $req04 = $NBEmployes
+            ->where('dtemps.annee', $year)
+            ->where('femploye.ID_Ent', $filiale)
+            ->get();
+
         } else {
             if (!empty($year)) {
                 $req01 = $res01
@@ -379,7 +582,11 @@ class DashboardController extends Controller
                 $req03 = $res03
                 ->where('dtemps.annee', $year)
                 ->groupBy('gestion_ressource')
-                ->get();         
+                ->get();   
+                
+                $req04 = $NBEmployes
+                ->where('dtemps.annee', $year)
+                ->get();
             } 
             if (!empty($filiale)) {
                 $req01 = $res01
@@ -395,7 +602,11 @@ class DashboardController extends Controller
                 $req03 = $res03
                 ->where('femploye.ID_Ent', $filiale)
                 ->groupBy('gestion_ressource')
-                ->get();               
+                ->get(); 
+                
+                $req04 = $NBEmployes
+                ->where('femploye.ID_Ent', $filiale)
+                ->get();
             }
         }
     
@@ -429,11 +640,12 @@ class DashboardController extends Controller
             ];
         });
     
-    
+
         $result = $result1->concat($result3);
+
+
     
-    
-        return response(["ebe1" => $result, "ebe2" => $result2]);
+        return response(["ebe1" => $result, "ebe2" => $result2, "total" => $req04]);
     }
     
 
@@ -443,10 +655,47 @@ class DashboardController extends Controller
         ->get();
     
         $req = [];
+
         $date = $request->date;
         $filiale = $request->filiale;
 
-    
+        if (!empty($date) or !empty($filiale)) {
+
+            if (!empty($date)) {
+                $results = DB::table('fcreances_dettes')
+                ->groupBy('ID_Ent_A', 'ID_Ent_B')
+                ->where('fcreances_dettes.ID_Temps', $date)
+                ->get();
+            }
+
+            if (!empty($filiale)) {
+                for ($j = 1; $j < 19; $j++) {
+                    $key = $filiale . '-' . $j;
+        
+                    $filteredResult = $results->where('ID_Ent_A', $filiale)->where('ID_Ent_B', $j)->first();
+        
+                    if ($filteredResult) {
+                        $req[$key] = $filteredResult;
+        
+                    } else {
+                        $req[$key] = (object) [
+                            'ID_Ent_A' => $filiale,
+                            'ID_Ent_B' => $j,
+                            'Montant_Factures' => 0,
+                            'Montant_Creances' => 0,
+                            'Nbr_Factures' => 0,
+                            'Nbr_Creances' => 0,
+                            'Montant_Dettes' => 0,
+                            'Nbr_Dettes' => 0,
+                            'Creances_vs_Dettes' => 0
+                        ];
+                    } 
+                }
+
+                $finalResults = array_values($req);
+                return response($finalResults);
+            }
+        } 
         for ($i = 1; $i < 19; $i++) {
             for ($j = 1; $j < 19; $j++) {
                 $key = $i . '-' . $j;
@@ -470,13 +719,12 @@ class DashboardController extends Controller
                     ];
                 }
             }
+        
         }
     
+        
+    
         $finalResults = array_values($req);
-    
-    
-    
-    
         return response($finalResults);
     }
 

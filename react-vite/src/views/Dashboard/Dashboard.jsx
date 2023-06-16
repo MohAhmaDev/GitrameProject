@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axiosClient from '../../axios-client';
-import { Box,colors, Typography, IconButton } from '@mui/material';
+import { Box,colors, Typography, IconButton, Button } from '@mui/material';
 
 import NivoChar from '../MUI/NivoChar';
 import NivoBar from '../MUI/NivoBar';
@@ -10,6 +10,7 @@ import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Woman2Icon from '@mui/icons-material/Woman2';
 import ManIcon from '@mui/icons-material/Man';
 import PercentIcon from '@mui/icons-material/Percent';
+
 
 export default function Dashboard() {
 
@@ -95,8 +96,6 @@ export default function Dashboard() {
 
 
   }, [dash02])
-
-
 
 
   return (
@@ -293,8 +292,8 @@ export default function Dashboard() {
                       <Box height="300px" mt="-10px">
                           <NivoChar data={dash03}/>
                       </Box>
-              </Box>          
-            </Box>          
+              </Box>         
+            </Box>     
           </div>
         </div>
         : <div className="card animated fadeInDown"

@@ -41,8 +41,8 @@ const Creances = () => {
         })
       }
     
-    // const edit = role !== "editor" ? null : {
-      const edit = {
+    const edit = role !== "editor" ? null : {
+      // const edit = {
       field: "edit",
       headerName: "Edit",
       flex: 0.5,
@@ -67,6 +67,7 @@ const Creances = () => {
         flex: 1, valueGetter: (params) => {
          return(params.value ? "regler" : "non regler")
         }  },
+        {field: "debtor_type", headerName: "Type", flex: 1}
     ]
 
     if (edit !== null) {
@@ -91,7 +92,7 @@ const Creances = () => {
                     {check && <button className='btn-delete' onClick={ev => onDelete()}> delete </button>}
                     {check && <Link style={{ marginLeft: "10px" }} to={`/creances/${CreanceID}`} className='btn-edit'> Edit </Link>}
 
-                    {(role && role !== "basic") && 
+                    {(role === "editor" && !!creances) && 
                     <Link style={{ marginLeft: "10px" }} to="/creances/new" className='btn-add'> Add new </Link>}
                 </div>
             </div>

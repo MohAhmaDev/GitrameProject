@@ -59,16 +59,16 @@ export default function CreancesForm() {
 
 
 
-  const openForm = () => {
-    if (role === "admin") {
-      setShow(true)
-    }
-  }
+  // const openForm = () => {
+  //   if (role === "admin") {
+  //     setShow(true)
+  //   }
+  // }
   useEffect(() => {
-    getFiliales()
-    getEntreprises()
-    fetchUser(),
-    openForm()
+    getFiliales();
+    getEntreprises();
+    fetchUser();
+    // openForm()
   }, [role])
 
 
@@ -80,10 +80,10 @@ export default function CreancesForm() {
     date_creance: yup.date().required('le champs date est obligatoire'),
     anteriorite_creance: yup.date().required('le champs anteriorite creance est obligatoire'),
     montant: yup.number().required('ce champ est obligatoire'),
-    debtor_type: selected?.debtor ? null : yup.string().required('le champs débiteur est obligatoire'),
-    creditor_type: selected?.creditor ? null : yup.string().required('le champ créditeur est obligatoire'),
-    debtor_id: selected?.debtor ? null: yup.number().required(),
-    creditor_id: selected?.creditor ? null : yup.number().required()
+    debtor_type: yup.string().required('le champs débiteur est obligatoire'),
+    creditor_type: filiale.id ? null : yup.string().required('le champ créditeur est obligatoire'),
+    debtor_id: yup.number().required(),
+    creditor_id:  filiale.id ? null : yup.number().required()
   })
   const { handleSubmit, control, setError, reset, register, formState,
   formState: { errors } , setValue} = useForm({
@@ -132,10 +132,10 @@ export default function CreancesForm() {
         date_creance: dayjs(data.date_creance).format("YYYY-MM-DD"),
         anteriorite_creance: dayjs(data.anteriorite_creance).format("YYYY-MM-DD"),
         observations: data.observations,
-        creditor_type: selected?.creditor ? "filiale" : data.creditor_type,
-        creditor_id: selected?.creditor ? selected?.id : data.creditor_id,
-        debtor_type: selected?.debtor ? "filiale" : data.debtor_type,
-        debtor_id: selected?.debtor ? selected?.id : data.debtor_id,
+        creditor_type: filiale.id ? "filiale" : data.creditor_type,
+        creditor_id: filiale.id ? filiale.id : data.creditor_id,
+        debtor_type: data.debtor_type,
+        debtor_id: data.debtor_id,
         montant: data.montant,
         montant_encaissement: data.montant_encaissement,
         regler: data.regler
@@ -165,10 +165,10 @@ export default function CreancesForm() {
         date_creance: dayjs(data.date_creance).format("YYYY-MM-DD"),
         anteriorite_creance: dayjs(data.anteriorite_creance).format("YYYY-MM-DD"),
         observations: data.observations,
-        creditor_type: selected?.creditor ? "filiale" : data.creditor_type,
-        creditor_id: selected?.creditor ? selected?.id : data.creditor_id,
-        debtor_type: selected?.debtor ? "filiale" : data.debtor_type,
-        debtor_id: selected?.debtor ? selected?.id : data.debtor_id,
+        creditor_type: filiale.id ? "filiale" : data.creditor_type,
+        creditor_id: filiale.id ? filiale.id : data.creditor_id,
+        debtor_type: data.debtor_type,
+        debtor_id: data.debtor_id,
         montant: data.montant,
       }
       axiosClient.post('/creances', creanceAdd)
@@ -237,17 +237,17 @@ export default function CreancesForm() {
   )
   
 
-  const ChoseRole = (e) => {
-    if (e === "creditor") {
-      setSelected({"creditor": true, "id": filiale?.id})
-    } 
-    if (e === "debtor") {
-      setSelected({"debtor": true, "id": filiale?.id})
-    }
-    setShow(true)
-  }
+  // const ChoseRole = (e) => {
+  //   if (e === "creditor") {
+  //     setSelected({"creditor": true, "id": filiale?.id})
+  //   } 
+  //   if (e === "debtor") {
+  //     setSelected({"debtor": true, "id": filiale?.id})
+  //   }
+  //   setShow(true)
+  // }
 
-  const getDette = () => {
+  const getCreance = () => {
     setLoading(true)
     axiosClient.get(`creances/${id}`)
     .then(({data}) => {
@@ -277,7 +277,8 @@ export default function CreancesForm() {
 
 if (id) {
   useEffect(() => {
-    getDette()
+    fetchUser()
+    getCreance()
     console.log(creance)
     if ((Object.keys(creance).length !== 0)) {
       handlChangeDebtor(creance.debtor_type)
@@ -287,7 +288,7 @@ if (id) {
 }
 
   return ( <>
-    {(filiale?.id && !show && !loading) && <div className="card animated fadeInDown">
+    {/* {(filiale?.id && !show && !loading) && <div className="card animated fadeInDown">
       <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="20px">
         <label style={{ gridColumn: "span 2" }}> {id ? "Modifier" : "Choisir" } le role  </label>    
         <FormControl sx={{ gridColumn: "span 2" }}>
@@ -300,12 +301,14 @@ if (id) {
           </Select>
         </FormControl>
       </Box>
-    </div>}
-    {(show && !loading) && 
+    </div>} */}
+    {(!loading) && 
     <div className="card animated fadeInDown">
       <Box m="20px">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))"
+          {(role === "admin") && <Box m="50px" 
+            display="grid" 
+            gridTemplateColumns="repeat(6, minmax(0, 1fr))"
             gap="20px" 
             sx={{ display: selected?.creditor ? 'none' : "grid" }}   
           >
@@ -340,7 +343,7 @@ if (id) {
               display: checkedOne ? null : 'none'}}>
               {creditor}
             </Zoom>
-          </Box>
+          </Box>}
           <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))"
             gap="20px"    
             sx={{ display: selected?.debtor ? 'none' : "grid" }}   
@@ -446,7 +449,7 @@ if (id) {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
                     sx={{ gridColumn: "span 2" }}
-                    label="anteriorite de la creance" 
+                    label="date limite de la creance" 
                     format="DD/MM/YYYY"
                     value={creance?.anteriorite_creance}
                     onChange={ev => {

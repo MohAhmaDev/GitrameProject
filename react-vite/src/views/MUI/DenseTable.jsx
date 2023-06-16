@@ -21,7 +21,7 @@ import Paper from '@mui/material/Paper';
 
 export default function DenseTable({data, id}) {
   return (
-    <TableContainer component={Paper} id={id}>
+    <TableContainer component={Paper} id={id} >
       <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>

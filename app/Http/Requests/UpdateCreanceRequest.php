@@ -42,7 +42,7 @@ class UpdateCreanceRequest extends FormRequest
             ],
             'debtor_id' => 'required|integer',
             'montant' => ['numeric', 'min:10000'],   
-            'montant_encaissement' => ['numeric', 'min:10000'],
+            'montant_encaissement' => ['numeric'],
             'regler' => 'boolean'  
         ];
     }

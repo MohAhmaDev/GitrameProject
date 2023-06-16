@@ -86,7 +86,7 @@ export default function Employe() {
           {check && <Link style={{ marginLeft: "10px" }} to={`/employes/${employeTD}`} className='btn-edit'> Edit </Link>}
 
 
-          {(role && role !== "basic" && !!employes) && 
+          {(role === "editor" && !!employes) && 
           <Link style={{ marginLeft: "10px" }} to="/employes/new" className='btn-add'> Add new </Link>}
         </div>
       </div>

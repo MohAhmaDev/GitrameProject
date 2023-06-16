@@ -84,7 +84,7 @@ const Finances = () => {
                     {check && <button className='btn-delete' onClick={ev => onDelete()}> delete </button>}
                     {check && <Link style={{ marginLeft: "10px" }} to={`/finances/${financeID}`} className='btn-edit'> Edit </Link>}
 
-                    {(role && role !== "basic") && 
+                    {(role === "editor" && !!finances) && 
                     <Link style={{ marginLeft: "10px" }} to="/finances/new" className='btn-add'> Add new </Link>}
                 </div>
             </div>

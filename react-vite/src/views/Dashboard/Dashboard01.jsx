@@ -12,7 +12,7 @@ InputLabel,
 Select, 
 MenuItem
  } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from "react-hook-form";
 import StatBox from '../MUI/StatBox';
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
@@ -27,9 +27,12 @@ import { pink } from '@mui/material/colors';
 import NivoBar from '../MUI/NivoBar';
 import NivoChar from '../MUI/NivoChar';
 import { useDisplayContext } from '../../contexts/DisplayContext';
+import { useReactToPrint } from "react-to-print";
 
 
 const Dashboard01 = () => {
+
+    const conponentPDF = useRef();
 
     const [effectifs, setEffectifs] = useState({});
     const [sociopro, setSociopro] = useState({});
@@ -40,6 +43,7 @@ const Dashboard01 = () => {
 
     const [key, setKey] = useState([]);
     const [post, setPost] = useState({});
+    const [total, setTotal] = useState({});
 
 
     const [dates, setDates] = useState({});
@@ -62,6 +66,7 @@ const Dashboard01 = () => {
         axiosClient.post('rhs_dashboard', req).then(({data}) => {
             setSociopro(data.ebe2);
             setEffectifs(data.ebe1);
+            setTotal(data.total)
         }).catch((err) => {
             console.log(err)
         })
@@ -115,6 +120,13 @@ const Dashboard01 = () => {
         })
     }
 
+    console.log(total[0])
+
+    const generatePDF= useReactToPrint({
+        content: ()=>conponentPDF.current,
+        documentTitle:"Userdata",
+        onAfterPrint:()=>alert("Data saved in PDF")
+    });
 
     return (
         <>
@@ -123,7 +135,7 @@ const Dashboard01 = () => {
             <div className="card animated fadeInDown" style={{ marginTop: "20px" }}>
             {(
             (Object.keys(post).length !== 0) && (Object.keys(contrat_Dash).length !== 0)
-            && (Object.keys(effectifs).length !== 0) && (Object.keys(sociopro).length !== 0)
+            // && (Object.keys(effectifs).length !== 0) && (Object.keys(sociopro).length !== 0)
             ) ? 
             <Box 
                 display="grid"
@@ -131,6 +143,7 @@ const Dashboard01 = () => {
                 // gridRow={"175px 175px"}
                 // gridTemplateRows="100px 100px 100px 175px"
                 gap="20px"
+                
             >
                 <Box
                     padding={"10px"}
@@ -188,7 +201,7 @@ const Dashboard01 = () => {
 
                 {/* ROW 1 */}
 
-                {check2 && effectifs.map(dash => (
+                {(check2 && Object.keys(effectifs).length !== 0) && effectifs.map(dash => (
                 <Box 
                 padding={"10px"}
                 gridColumn="span 2" 
@@ -217,14 +230,14 @@ const Dashboard01 = () => {
                     alignItems="center"
                     justifyContent="center"> 
                     <StatBox 
-                    title="28"
+                    title={total[0].nb_employes ? total[0].nb_employes : 0}
                     subtitle="Total"
                     icon={
                         <WorkIcon sx={{ color: "#FFFFFF", fontSize: "30px"}}/>
                     }
                     />
                 </Box>}
-                {check1 && sociopro.map(dash => (
+                {(check1 && Object.keys(sociopro).length !== 0) && sociopro.map(dash => (
                     <Box 
                     padding={"10px"}                    
                     gridColumn="span 2" 
@@ -305,6 +318,8 @@ const Dashboard01 = () => {
                     onClick={handleSubmit(onSubmit)}>
                         Renaitialiser
                     </Button>
+                    <Button variant='contained' style={{ marginLeft: "10px" }} onClick={ generatePDF} color="error"> PDF REPORT </Button> 
+
                 </Box>
                 </Box>
             </Box> :<CircularProgress disableShrink />}

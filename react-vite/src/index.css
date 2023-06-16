@@ -392,6 +392,8 @@ table > tbody > tr > td {
 
   .ftable {
     border-collapse: collapse;
+    transition: opacity 1s ease-in-out;
+
   }
   
    td.F_, th.F_ {  
@@ -407,4 +409,8 @@ table > tbody > tr > td {
   th.F_ {
     background: lightblue;
     border-color: white;
+  }
+
+  .table-transition {
+    transition: opacity 0.3s ease-in-out;
   }

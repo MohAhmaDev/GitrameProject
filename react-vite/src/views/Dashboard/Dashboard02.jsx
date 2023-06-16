@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DenseTable from '../MUI/DenseTable';
 import { Box, TextField, Button, CircularProgress,
 FormControl, Select, InputLabel, MenuItem} from '@mui/material';
@@ -7,8 +7,12 @@ import { useForm, Controller } from "react-hook-form";
 import { useDisplayContext } from '../../contexts/DisplayContext';
 import { Link } from 'react-router-dom';
 import 'table2excel';
+import { useReactToPrint } from "react-to-print";
+
 
 const Dashboard02 = () => {
+
+    const conponentPDF= useRef();
 
     const [data, setData] = useState({
         filiale: "",
@@ -101,8 +105,14 @@ const Dashboard02 = () => {
         console.log("ou ! oui vous l'avais")
     }
 
+    const generatePDF= useReactToPrint({
+        content: ()=>conponentPDF.current,
+        documentTitle:"Userdata",
+        onAfterPrint:()=>alert("Data saved in PDF")
+    });
+
     return (
-        <>
+        <React.Fragment>
             <h1> Dashboard Finance </h1>
             <div className="card animated fadeInDown">
                 <h2 style={{ gridColumn: "span 6" }}> Filtres </h2>
@@ -130,7 +140,8 @@ const Dashboard02 = () => {
                         )}
                     /> 
                 </Box> 
-                <Box m="25px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="30px" > 
+                <Box m="25px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="30px" 
+                > 
                     <label style={{ gridColumn: "span 1" }}> Finance : (filitre Annee) </label>
                     <Controller
                         control={control}
@@ -155,20 +166,71 @@ const Dashboard02 = () => {
                 </Box> 
 
                 
-                {(rows && Object.keys(rows).length !== 0) ? <DenseTable data={rows} id="print"/> : <CircularProgress disableShrink />}
+                {(rows && Object.keys(rows).length !== 0) ? 
+                <Box ref={conponentPDF}>
+                    <h2 style={{ marginBottom: "10px", textAlign: "center" }}> Agrégat Finance Cumuler </h2>
+                    <DenseTable data={rows} id="print"/>
+                </Box>
+                 : <CircularProgress disableShrink />}
                 <Box display="flex" justifyContent="end" mt="20px" m="10px">
                     <Button type="submit" color="primary" variant="contained">
                         Renaitialiser
                     </Button>
-                    <a style={{ marginLeft: "10px" }} className='btn-add' 
-                    onClick={ev => {downloadReport()}}> PDF REPORT </a>
-                    <a style={{ marginLeft: "10px" }} className='btn-delete' 
-                    onClick={ev => {exportData()}}> EXEL REPORT </a>
+                    
                 </Box>                                                        
-                </form>                      
-                
+                </form>    
+                {/* <Button style={{ marginLeft: "10px" }} onClick={ev => {downloadReport()}} color="error"> PDF REPORT </Button>  */}
+                <Button style={{ marginLeft: "10px" }} onClick={ generatePDF} color="error"> PDF REPORT </Button> 
+                <Button style={{ marginLeft: "10px" }} onClick={ev => {exportData()}} color='success'>EXEL REPORT </Button>                  
+                {/* <div className="io">
+                    <div className="row">
+                        <div className="col-md-12">
+                        <h5 className="mt-2">User List</h5> 
+                        
+                        <div className="d-grid d-md-flex justify-content-md-end mb-3">
+                        </div> 
+                    <div ref={conponentPDF} style={{width:'100%'}}>
+                        <table className="table table-bordered" >
+                            <thead className="bg-light">
+                            <tr>
+                                <th>Sr. No</th>
+                                <th>Name</th>
+                                <th>User Name</th>
+                                <th>Email</th>
+                                <th>Phone No</th>
+                                <th>Gender</th>
+                                <th>Country</th>
+                                <th>State</th>
+                                <th>Address1</th>
+                                <th>Action</th>
+                                </tr> 
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>+</td>
+                                    <td>name</td>
+                                    <td>username</td>
+                                    <td>email</td>
+                                    <td>phoneno</td>
+                                    <td>gender</td>
+                                    <td>countryname</td>
+                                    <td>state_name</td>
+                                    <td>address1</td>
+                                    <td>
+                                        Edit
+                                    </td>
+                                </tr>
+                            </tbody>                        
+                        </table>         
+                        </div>
+                        <div className="d-grid d-md-flex justify-content-md-end mb-3">
+                        <button className="btn btn-success" onClick={ generatePDF}>PDF</button>                       
+                        </div> 
+                        </div>
+                    </div>
+                </div>   */}
             </div>
-        </>
+        </React.Fragment>
     );
 };
 
