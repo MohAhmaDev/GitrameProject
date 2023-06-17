@@ -20,12 +20,14 @@ const Dashboard02 = () => {
     });
     const {filiales, getFiliales, setFiliales} = useDisplayContext()
     const [dash, setDash] = useState({});
+    const [kpi, setKpi] = useState({});
     const [rows, setRows] = useState({});
     const [dates, setDates] = useState({});
 
     const getFinanceDashboard = (req) => {
         axiosClient.post('/finance_dashboard', req).then(({data}) => {
-            setDash(data);
+            setDash(data.tab1);
+            setKpi(data.tab2);
         }).catch((err) => {
             console.log(err)
         })
@@ -43,7 +45,7 @@ const Dashboard02 = () => {
         getDates()
         getFiliales();
         getFinanceDashboard(data);
-        console.log('load', data)
+        console.log('load', data);
     }, [data])
 
 
@@ -110,6 +112,8 @@ const Dashboard02 = () => {
         documentTitle:"Userdata",
         onAfterPrint:()=>alert("Data saved in PDF")
     });
+
+    console.log(kpi)
 
     return (
         <React.Fragment>
@@ -229,6 +233,31 @@ const Dashboard02 = () => {
                         </div>
                     </div>
                 </div>   */}
+                {
+                    (kpi && Object.keys(kpi).length !== 0) ? 
+                    <div style={{ marginTop: "50px" }}>
+                        <h2 style={{ marginBottom: "10px", textAlign: "center" }}> Agrégat Finance Cumuler </h2>
+                        <h2></h2>
+                        <table>
+                        <thead>
+                            <tr>
+                            {(Object.keys(kpi).length !== 0) && kpi.map(data => (
+                                    <th value={data?.label} > {data?.label} </th>
+                            ))}    
+                            </tr> 
+                        </thead>
+                        <tbody>
+                            <tr>
+                            {(Object.keys(kpi).length !== 0) && kpi.map(data => (
+                                    <td value={data?.val} > {data?.val} </td>
+                            ))} 
+                            </tr>
+                        </tbody>                        
+                        </table> 
+                    </div>
+                    : <CircularProgress disableShrink />
+                }
+                
             </div>
         </React.Fragment>
     );
