@@ -30,7 +30,7 @@ class EmployeController extends Controller
 
         $this->authorize('viewAny', Employe::class);
 
-        if ($role === "admin") {
+        if ($role === "global") {
             $employe = Employe::all();
         } 
         else {
@@ -56,7 +56,7 @@ class EmployeController extends Controller
         $branch = auth()->user()->filiales->first();
 
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
@@ -77,7 +77,7 @@ class EmployeController extends Controller
             $data['date_retraite'] = null;
         }
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if (!is_null($branch->id)) {
                 $data['filiale_id'] = !empty($data['filiale_id']) ? $data['filiale_id'] : $branch->id;
             } else {
@@ -101,7 +101,7 @@ class EmployeController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if ($employe->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
@@ -122,7 +122,7 @@ class EmployeController extends Controller
         $branch = auth()->user()->filiales->first();
 
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
@@ -130,7 +130,7 @@ class EmployeController extends Controller
         $this->authorize('update', $employe);
 
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if ($employe->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
@@ -160,7 +160,7 @@ class EmployeController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first->id;
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
@@ -168,7 +168,7 @@ class EmployeController extends Controller
         $this->authorize('delete', $employe);
 
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if ($employe->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"

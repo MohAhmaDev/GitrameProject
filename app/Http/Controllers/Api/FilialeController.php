@@ -15,9 +15,10 @@ class FilialeController extends Controller
     public function index()
     {
         $role = auth()->user()->roles->first()->name;
+        $access = ["admin", "global"];
         $branch = auth()->user()->filiales->first();
 
-        if ($role === "admin") {
+        if (in_array($role, $access)) {
             $filiales = Filiale::all();
         } else {
             $id = $branch->id;

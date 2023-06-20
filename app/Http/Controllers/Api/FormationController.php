@@ -21,7 +21,7 @@ class FormationController extends Controller
         $branch = auth()->user()->filiales->first();
 
 
-        if ($role === "admin") {
+        if ($role === "global") {
             $formations = Formation::all();
         } else {
             $id = $branch->id;
@@ -45,7 +45,7 @@ class FormationController extends Controller
         $branch = auth()->user()->filiales->first();
 
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
@@ -64,7 +64,7 @@ class FormationController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             $id = $branch->id;
             if ($formation->employe_id !== Employe::where('filiale_id', $id)->first()->id) {
                 return response([
@@ -85,12 +85,12 @@ class FormationController extends Controller
         $branch = auth()->user()->filiales->first();
 
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             $id = $branch->id;
             if ($formation->employe_id !== Employe::where('filiale_id', $id)->first()->id) {
                 return response([
@@ -112,12 +112,12 @@ class FormationController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first->id;
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             $id = $branch->id;
             if ($formation->employe_id !== Employe::where('filiale_id', $id)->first()->id) {
                 return response([

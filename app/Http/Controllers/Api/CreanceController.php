@@ -26,7 +26,7 @@ class CreanceController extends Controller
 
         $this->authorize('viewAny', Creance::class);
         
-        if ($role === "admin") {
+        if ($role === "global") {
             $creance = Creance::all();
         } else 
         {
@@ -57,7 +57,7 @@ class CreanceController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
@@ -87,7 +87,7 @@ class CreanceController extends Controller
             ], 422);                 
         }
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             $id = $branch->id;
             if (!is_null($id)) {
                 if (($data['creditor_id'] !== $id) and ($data['debtor_id'] !== $id))
@@ -122,7 +122,7 @@ class CreanceController extends Controller
 
         
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if (($creance->debtor_id !== $branch->id) and ($creance->creditor_id !== $branch->id)) {
                 return response([
                     'message' => "you don't have the permission de to this action"
@@ -142,7 +142,7 @@ class CreanceController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
@@ -151,7 +151,7 @@ class CreanceController extends Controller
 
 
         
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if (($creance->debtor_id !== $branch->id) and ($creance->creditor_id !== $branch->id)) {
                 return response([
                     'message' => "you don't have the permission de to this action"
@@ -206,13 +206,13 @@ class CreanceController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first->id;
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
         // $this->authorize('delete', $creance);
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if (($creance->debtor_id !== $branch->id) and ($creance->creditor_id !== $branch->id)) {
                 return response([
                     'message' => "you don't have the permission de to this action"

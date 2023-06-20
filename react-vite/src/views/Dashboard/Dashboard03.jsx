@@ -18,12 +18,15 @@ import { Box,
 import { useForm, Controller } from "react-hook-form";
 import 'table2excel';
 import { useReactToPrint } from "react-to-print";
+import { useStateContext } from '../../contexts/ContextProvider';
 
 
 
 const Dashboard03 = () => {
 
     const conponentPDF = useRef();
+    const { fetchUser, filiale } = useStateContext();
+
     const [isLoading, setIsLoading] = useState(true);
 
     const [dates, setDates] = useState({});
@@ -33,10 +36,14 @@ const Dashboard03 = () => {
     });
     const [checked, setChecked] = useState({
         creances: true,
-        dettess: false,
+        dettes: false,
         creances_vs_dettes: false
     });
-    const [data, setData] = useState({});
+    const [data1, setData1] = useState({});
+    const [data2, setData2] = useState({});
+    const [data3, setData3] = useState({});
+    const [secteur, setSecteur] = useState({});
+    const [groupe, setGroupe] = useState({});
     const { getFiliales, setFiliales, filiales } = useDisplayContext()
 
 
@@ -48,7 +55,11 @@ const Dashboard03 = () => {
 
     const getData = (req) => {
         axiosClient.post('/dash_creance_dettes', req).then(({data}) => {
-            setData(data);
+            setData1(data.data1);
+            setData2(data.data2);
+            setData3(data.data3);
+            setGroupe(data.groupe);
+            setSecteur(data.secteur);
             }).catch((error) => {
             console.log(error)
         })
@@ -73,7 +84,7 @@ const Dashboard03 = () => {
             }
             
             for (let i = 1; i < 19; i++) {
-                const field = data.find(item => item?.ID_Ent_A === index && item?.ID_Ent_B === i);
+                const field = data1.find(item => item?.ID_Ent_A === index && item?.ID_Ent_B === i);
                 const montantCreances = field ? field.Montant_Creances : "-";
                 const montantDettes = field ? field.Montant_Dettes : "-";
                 const CreancesVSDettes = field ? field.Creances_vs_Dettes : "-";
@@ -82,7 +93,7 @@ const Dashboard03 = () => {
                 <td key={`cell-${index}-${i}`} className="F_">
                     <ul style={{ listStyle: "none", margin: "0px", padding: "0px" }}>
                         {checked.creances && <li> {montantCreances} </li>}
-                        {checked.dettess && <li> {montantDettes} </li>}
+                        {checked.dettes && <li> {montantDettes} </li>}
                         {checked.creances_vs_dettes && <li> {CreancesVSDettes} </li>}
                     </ul>
                 </td>);
@@ -92,13 +103,101 @@ const Dashboard03 = () => {
         return rows;
     };
 
+    console.log(data1)
+
+
+    const getTable2 = () => {
+        const rows = [];
+      
+        for (let index = 1; index < 19; index++) {
+          const cells = [];
+      
+          if (Form.filiale) {
+            if (Form.filiale === index) {
+              cells.push(<th key={`header-${index}`} className="F_">F-{index}</th>);
+            }
+          } else {
+            cells.push(<th key={`header-${index}`} className="F_">F-{index}</th>);
+          }
+      
+          groupe.forEach(element => {
+            const field = data2.find(item => item?.ID_Ent_A === index && item?.Grp_Ent === element.Grp_Ent);
+            const montantCreances = field ? field.Montant_Creances : "-";
+            const montantDettes = field ? field.Montant_Dettes : "-";
+            const CreancesVSDettes = field ? field.Creances_vs_Dettes : "-";
+      
+            if (field) {
+              cells.push(
+                <td key={`cell-${index}-${element.Grp_Ent}`} className="F_">
+                  <ul style={{ listStyle: "none", margin: "0px", padding: "0px" }}>
+                    {checked.creances && <li>{montantCreances}</li>}
+                    {checked.dettes && <li>{montantDettes}</li>}
+                    {checked.creances_vs_dettes && <li>{CreancesVSDettes}</li>}
+                  </ul>
+                </td>
+              );
+            }
+          });
+      
+          rows.push(<tr key={`row-${index}`}>{cells}</tr>);
+        }
+      
+        return rows;
+    };
+      
+    const getTable3 = () => {
+        const rows = [];
+      
+        for (let index = 1; index < 19; index++) {
+          const cells = [];
+      
+          if (Form.filiale) {
+            if (Form.filiale === index) {
+              cells.push(<th key={`header-${index}`} className="F_">F-{index}</th>);
+            }
+          } else {
+            cells.push(<th key={`header-${index}`} className="F_">F-{index}</th>);
+          }
+      
+          secteur.forEach(element => {
+            const field = data3.find(item => item?.ID_Ent_A === index && item?.Sect_Ent === element.Sect_Ent);
+            const montantCreances = field ? field.Montant_Creances : "-";
+            const montantDettes = field ? field.Montant_Dettes : "-";
+            const CreancesVSDettes = field ? field.Creances_vs_Dettes : "-";
+      
+            if (field) {
+              cells.push(
+                <td key={`cell-${index}-${element.Sect_Ent}`} className="F_">
+                  <ul style={{ listStyle: "none", margin: "0px", padding: "0px" }}>
+                    {checked.creances && <li>{montantCreances}</li>}
+                    {checked.dettes && <li>{montantDettes}</li>}
+                    {checked.creances_vs_dettes && <li>{CreancesVSDettes}</li>}
+                  </ul>
+                </td>
+              );
+            }
+          });
+      
+          rows.push(<tr key={`row-${index}`}>{cells}</tr>);
+        }
+      
+        return rows;
+    };
+
+    useEffect(() => {
+        fetchUser()
+    }, [])
+
     useEffect(() => {
         setIsLoading(true)
-        setData({});
         getFiliales();
         getDates();
         getData(Form)
     }, [Form]);
+
+    useEffect(() => {
+        setForm({...Form, filiale: filiale?.id})
+    }, [filiale])
 
     const onSubmit = () => {
         setForm({
@@ -108,6 +207,7 @@ const Dashboard03 = () => {
         getData();
     }
 
+    console.log("filiale : ", filiale)
 
     const downloadReport = () => {
         const invoice = document.getElementById("ftable");
@@ -141,6 +241,13 @@ const Dashboard03 = () => {
         onAfterPrint:()=>alert("Data saved in PDF")
     });
 
+
+    console.log("data3 : ",data3);
+    console.log("data2 : ",data2);
+    console.log("data1 : ",data1);
+    console.log('groupe : ', groupe);
+    console.log('secteur : ', secteur);
+
     return (
         <div style={{ background: "#fff", padding: "20px", borderRadius: "5px" }}>
             <Box padding={"20px"}
@@ -156,16 +263,17 @@ const Dashboard03 = () => {
                     <FormGroup>
                         <FormControlLabel control={<Checkbox checked={checked.creances}
                         onClick={ev => { setChecked({...checked, creances: !checked.creances}) }}/>} label="creances" />
-                        <FormControlLabel control={<Checkbox checked={checked.dettess}
-                        onClick={ev => { setChecked({...checked, dettess: !checked.dettess}) }}/>} label="dettes" />
+                        <FormControlLabel control={<Checkbox checked={checked.dettes}
+                        onClick={ev => { setChecked({...checked, dettes: !checked.dettes}) }}/>} label="dettes" />
                         <FormControlLabel control={<Checkbox checked={checked.creances_vs_dettes}
                         onClick={ev => { setChecked({...checked, creances_vs_dettes: !checked.creances_vs_dettes}) }}/>}
                         label="creances_vs_dettes" />
                     </FormGroup>
                 </Box>
                 <Box>
-                    <Box m="25px">
-                        <Controller
+                    {(Object.keys(data2).length !== 0 && Object.keys(data1).length !== 0 
+                    && Object.keys(data3).length !== 0) && <Box m="25px">
+                        {(!filiale?.id) && <Controller
                             control={control}
                             name="filiale"
                             render={({ field: { onChange } }) => (
@@ -184,8 +292,8 @@ const Dashboard03 = () => {
                                 </Select>
                                 </FormControl>
                             )}
-                        />
-                    </Box>
+                        />}
+                    </Box>}
                     <Box m="25px">
                         <Controller
                             control={control}
@@ -197,7 +305,7 @@ const Dashboard03 = () => {
                                     sx={{ gridColumn: "span 2" }}
                                     label="Filtre Mois"
                                     {...register("date")}
-                                    value={data.date}
+                                    value={Form.date}
                                     onChange={(ev) => setForm({...Form, date: ev.target.value})}
                                 >
                                     {(Object.keys(dates).length !== 0) && dates?.map(date => (
@@ -211,23 +319,58 @@ const Dashboard03 = () => {
                 </Box>
 
             </Box>
-            <div>
-            {Object.keys(data).length !== 0 ?
-            <table className="ftable" id="ftable" ref={conponentPDF}>
-                <thead>
-                    <tr>
-                        <th className="F_"></th>
-                        {[...Array(18)].map((_, i) => (
-                            <th key={`header-${i}`} className="F_">F_{i + 1}</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {getTable()}
-                </tbody>
-            </table>: <CircularProgress disableShrink />}
+            <div ref={conponentPDF}>
+                <h2 style={{ textAlign: "center" }}> Table Inter filiale </h2>
+                {Object.keys(data1).length !== 0 ?
+                <table className="ftable" id="ftable" style={{ marginBottom: "25px" }}>
+                    <thead>
+                        <tr>
+                            <th className="F_"></th>
+                            {[...Array(18)].map((_, i) => (
+                                <th key={`header-${i}`} className="F_">F_{i + 1}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {getTable()}
+                    </tbody>
+                </table>: <CircularProgress disableShrink />}
+                <h2 style={{ textAlign: "center" }}>  Par groupe Inter </h2>
+                {Object.keys(data2).length !== 0 ?
+                <table className="ftable" id="ftable" style={{ marginBottom: "25px" }}>
+                    <thead>
+                        <tr>
+                            <th className="F_"></th>
+                            {Object.keys(groupe).length !== 0 && groupe.map((data) => (
+                                <th key={data.Grp_Ent} className="F_">
+                                    {data.Grp_Ent}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {getTable2()}
+                    </tbody>
+                </table>: <CircularProgress disableShrink />}
+                <h2 style={{ textAlign: "center" }}>  Par secteur Inter </h2>
+                {Object.keys(data3).length !== 0 ?
+                <table className="ftable" id="ftable">
+                    <thead>
+                        <tr>
+                            <th className="F_"></th>
+                            {Object.keys(secteur).length !== 0 && secteur.map((data) => (
+                                <th key={data.Sect_Ent} className="F_">
+                                    {data.Sect_Ent}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {getTable3()}
+                    </tbody>
+                </table>: <CircularProgress disableShrink />}
             </div>
-            <Box display="flex" justifyContent="end" mt="20px" m="10px">
+            <Box display="flex" justifyContent="end" mt="20px" m="25px">
                 <Button type="submit" color="primary" variant="contained" 
                 onClick={handleSubmit(onSubmit)}>
                     Renaitialiser

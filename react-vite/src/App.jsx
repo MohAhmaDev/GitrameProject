@@ -6,7 +6,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>React + Vite</h1>
+      <h1>Gitrama Dashboard</h1>
     </div>
   )
 }

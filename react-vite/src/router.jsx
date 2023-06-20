@@ -26,6 +26,8 @@ import StagiaresForm from './views/StagiaresForm'
 import Formation from './views/Formations';
 import FormationForm from './views/FormationForm'
 import UserTest from './views/UserTest';
+import TemplateTest from './views/TemplateTest';
+import GitramReports from './views/MUI/GitramReports';
 
 
 const router = createBrowserRouter([
@@ -37,7 +39,7 @@ const router = createBrowserRouter([
         children: [
             {
                 path: '/',
-                element: <Navigate to='/users'/>
+                element: <Navigate to='/dashboard'/>
             },
             {
                 path: '/users',
@@ -104,18 +106,6 @@ const router = createBrowserRouter([
                 element:  <PrivateRoute redirectpath='/creances'> <CreancesForm key="creance_Update" /> </PrivateRoute>
             },
             {
-                path: '/stagiares',
-                element: <Stagiares />
-            },
-            {
-                path: '/stagiares/new',
-                element: <PrivateRoute redirectpath='/stagiares'> <StagiaresForm key="stagiare_Create"/> </PrivateRoute>
-            },
-            {
-                path: '/stagiares/:id',
-                element:  <PrivateRoute redirectpath='/stagiares'> <StagiaresForm key="stagiare_Update" /> </PrivateRoute>
-            },
-            {
                 path: '/formations',
                 element: <Formation />
             },
@@ -146,6 +136,14 @@ const router = createBrowserRouter([
             {
                 path: '/dashboard/Dette_Creances',
                 element: <Dashboard03 />
+            },
+            {
+                path: '/test',
+                element: <TemplateTest />
+            },
+            {
+                path: '/report',
+                element: <GitramReports />
             }
         ]
     },

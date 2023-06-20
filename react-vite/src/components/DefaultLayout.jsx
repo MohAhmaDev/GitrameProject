@@ -13,9 +13,6 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 export default function DefaultLayout() {
 
-    const [toggleMenue, setToggleMenue] = useState(false);
-    const [toggleDashMenu, setToggleDashMenu] = useState(false)
-
 
 
     const {
@@ -26,12 +23,18 @@ export default function DefaultLayout() {
         notification,
         admission,
         fetchUser,
-        role
+        role, 
+        toggleMenu,
+        toggleMenue, 
+        setToggleDashMenu,
+        setToggleMenue,
+        toggleDashMenu
     } = useStateContext();
 
     if (!token) {
         return <Navigate replace to='/login' />
     } 
+
 
     const onLogout = (ev) => {
         ev.preventDefault();
@@ -41,19 +44,6 @@ export default function DefaultLayout() {
             setUser({});
             setToken(null);
         })
-    }
-
-    function toggleMenu(toggle, Menu=false){
-
-        const menuToggle = document.querySelectorAll(toggle);
-        for (let index = 0; index < menuToggle.length; index++) {
-            menuToggle[index].classList.toggle('active');
-        }
-        if (Menu) {
-            setToggleMenue(p => !p)
-        } else {
-            setToggleDashMenu(p => !p)
-        }
     }
 
 
@@ -68,36 +58,43 @@ export default function DefaultLayout() {
     return (
         <div id='defaultLayout'>
             <aside>
-                <span style={{ display: "flex", justifyContent: "space-between" }}
-                onClick={() => toggleMenu(".toggle-dash", false)}>
-                    <div> 
-                         <DirectionsBoatIcon/>
-                        <span style={{ fontWeight: "900", fontSize: "18px",
-                        position: "relative", bottom: "5px"  }}> Dashboard </span>  
-                    </div>  
-                    {toggleDashMenu ? <ExpandMoreIcon /> : <ExpandLessIcon/>}
-                </span>
-                <Link to='/dashboard' className='toggle-dash'> Dashboard Globale </Link>
-                <Link to='/dashboard/RHS' className='toggle-dash'> Dashboard RHS </Link>
-                <Link to='/dashboard/Finance' className='toggle-dash'> Dashboard Finance </Link>
-                <Link to='/dashboard/Dette_Creances' className='toggle-dash'> Dettes_Creances </Link>
-                <span onClick={() => toggleMenu(".toggle-menue", true)} 
-                style={{ display: "flex", justifyContent: "space-between" }}>
-                    <div> 
-                        <CorporateFareIcon/>
-                        <span style={{ fontWeight: "900", fontSize: "18px",
-                        position: "relative", bottom: "5px"  }}> Entreprise </span>  
-                    </div>  
-                    {toggleMenue ? <ExpandMoreIcon /> : <ExpandLessIcon/>}
-                </span>
-                {role === "admin" && <Link to='/users' className='toggle-menue'> Users </Link>}
-                {(role === "admin" || admission?.name === "A1") && <Link to='/employes' className='toggle-menue'> Listes de Employes </Link>}
-                {(role === "admin" || admission?.name === "A2") && <Link to='/dettes' className='toggle-menue'> Listes des Dettes </Link>}
-                {(role === "admin" || admission?.name === "A4") && <Link to='/finances' className='toggle-menue'> Listes des Finances </Link>}
-                {(role === "admin" || admission?.name === "A3") && <Link to='/creances' className='toggle-menue'> Listes des creances </Link>}
-                {/* {(role === "admin" || admission?.name === "A1") && <Link to='/stagiares' className='toggle-menue'> Listes des Stagiares </Link>} */}
-                {(role === "admin" || admission?.name === "A1") && <Link to='/formations' className='toggle-menue'> Listes des Formations </Link>}
+                {(role !== "admin" && admission) && <>
+                    <span style={{ display: "flex", justifyContent: "space-between" }}
+                    onClick={() => toggleMenu(".toggle-dash", false)}>
+                        <div> 
+                            <DirectionsBoatIcon/>
+                            <span style={{ fontWeight: "900", fontSize: "18px",
+                            position: "relative", bottom: "5px"  }}> Dashboard </span>  
+                        </div>  
+                        {toggleDashMenu ? <ExpandMoreIcon /> : <ExpandLessIcon/>}
+                    </span>
+                    <Link to='/dashboard' className='toggle-dash'> Dashboard Globale </Link>
+                    <Link to='/dashboard/RHS' className='toggle-dash'> Dashboard RHS </Link>
+                    <Link to='/dashboard/Finance' className='toggle-dash'> Dashboard Finance </Link>
+                    <Link to='/dashboard/Dette_Creances' className='toggle-dash'> Dettes_Creances </Link>
+                    <span onClick={() => toggleMenu(".toggle-menue", true)} 
+                    style={{ display: "flex", justifyContent: "space-between" }}>
+                        <div> 
+                            <CorporateFareIcon/>
+                            <span style={{ fontWeight: "900", fontSize: "18px",
+                            position: "relative", bottom: "5px"  }}> Entreprise </span>  
+                        </div>  
+                        {toggleMenue ? <ExpandMoreIcon /> : <ExpandLessIcon/>}
+                    </span>
+                    {/* {role === "global" && <Link to='/users' className='toggle-menue'> Users </Link>} */}
+                    {(role === "global" || admission?.name === "A1" || admission?.name === "A5") && 
+                    <Link to='/employes' className='toggle-menue'> Listes de Employes </Link>}
+                    {(role === "global" || admission?.name === "A2" || admission?.name === "A5") && 
+                    <Link to='/dettes' className='toggle-menue'> Listes des Dettes </Link>}
+                    {(role === "global" || admission?.name === "A4" || admission?.name === "A5") && 
+                    <Link to='/finances' className='toggle-menue'> Listes des Finances </Link>}
+                    {(role === "global" || admission?.name === "A3" || admission?.name === "A5") && 
+                    <Link to='/creances' className='toggle-menue'> Listes des creances </Link>}
+                    {(role === "global" || admission?.name === "A1" || admission?.name === "A5") && 
+                    <Link to='/formations' className='toggle-menue'> Listes des Formations </Link>}
 
+                </>}
+                {role === "admin" && <Link to='/users' className='active'> Users </Link>}
             </aside>
             <div className='content'> 
                 <header>

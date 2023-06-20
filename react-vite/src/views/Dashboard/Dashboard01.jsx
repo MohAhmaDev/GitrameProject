@@ -23,23 +23,30 @@ import WorkIcon from '@mui/icons-material/Work';
 import GroupIcon from '@mui/icons-material/Group';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import axiosClient from '../../axios-client';
-import { pink } from '@mui/material/colors';
+import { blue, orange, pink } from '@mui/material/colors';
 import NivoBar from '../MUI/NivoBar';
 import NivoChar from '../MUI/NivoChar';
 import { useDisplayContext } from '../../contexts/DisplayContext';
 import { useReactToPrint } from "react-to-print";
-
+import SailingIcon from '@mui/icons-material/Sailing';
 
 const Dashboard01 = () => {
 
     const conponentPDF = useRef();
 
+    const [fformation, setFformation] = useState({
+        type_formation: {},
+        Montant: null,
+        NB_personne: null,
+    });
     const [effectifs, setEffectifs] = useState({});
     const [sociopro, setSociopro] = useState({});
     const [trancheAge, setTrancheAge] = useState({});
     const [contrat_Dash, setCotrat_Dash] = useState({});
     const [check1, setCheck1] = useState(true);
     const [check2, setCheck2] = useState(true);
+    const [check3, setCheck3] = useState(true);
+
 
     const [key, setKey] = useState([]);
     const [post, setPost] = useState({});
@@ -80,8 +87,21 @@ const Dashboard01 = () => {
         })
     }
 
+    const getFformation = () => {
+        axiosClient.post('/dash_formation').then(({data}) => {
+            setFformation({
+                type_formation: data.type_formation,
+                Montant: data.Montant,
+                NB_personne: data.NB_personne
+            })
+        }).catch((err) => {
+            console.log(err)
+        })        
+    }
+
 
     useEffect(() => {
+        getFformation();
         getDates()
         getFiliales();
         getData(data);
@@ -120,7 +140,7 @@ const Dashboard01 = () => {
         })
     }
 
-    console.log(total[0])
+    console.log(fformation)
 
     const generatePDF= useReactToPrint({
         content: ()=>conponentPDF.current,
@@ -230,13 +250,33 @@ const Dashboard01 = () => {
                     alignItems="center"
                     justifyContent="center"> 
                     <StatBox 
-                    title={total[0].nb_employes ? total[0].nb_employes : 0}
+                    title={total[0]?.nb_employes ? total[0]?.nb_employes : 0}
                     subtitle="Total"
                     icon={
                         <WorkIcon sx={{ color: "#FFFFFF", fontSize: "30px"}}/>
                     }
                     />
                 </Box>}
+
+                {check3 && (Object.keys(fformation.type_formation).length !== 0) && 
+                    fformation.type_formation.map(dash => (
+                <Box 
+                minHeight={"100px"}
+                padding={"10px"}
+                gridColumn="span 2" 
+                backgroundColor={"#1e88e5"} 
+                display="flex" 
+                alignItems="center"
+                justifyContent="center"> 
+                    <StatBox 
+                    title={dash.nb_effectif}
+                    subtitle={dash.Domaine}
+                    icon={
+                        <SailingIcon sx={{ color: "#FFFFFF", fontSize: "30px" }} />
+                    }
+                    />
+                </Box>))}
+
                 {(check1 && Object.keys(sociopro).length !== 0) && sociopro.map(dash => (
                     <Box 
                     padding={"10px"}                    
@@ -256,6 +296,7 @@ const Dashboard01 = () => {
                 </Box>
                 ))}
 
+
                 <Box 
                 gridColumn="span 12" 
                 >
@@ -270,6 +311,14 @@ const Dashboard01 = () => {
                             },
                         }}
                         />} label="socioprofessionnelle" />
+                        <FormControlLabel control={<Checkbox checked={check3} onClick={ev => { setCheck3(c => !c) }}
+                        sx={{
+                            color: blue[800],
+                            '&.Mui-checked': {
+                                color: blue[600],
+                            },
+                        }}
+                        />} label="Formation " />
                     </FormGroup>
                 </Box>
 
@@ -330,3 +379,5 @@ const Dashboard01 = () => {
 };
 
 export default Dashboard01;
+
+// #ef6c00

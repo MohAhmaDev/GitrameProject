@@ -8,14 +8,17 @@ import { useDisplayContext } from '../../contexts/DisplayContext';
 import { Link } from 'react-router-dom';
 import 'table2excel';
 import { useReactToPrint } from "react-to-print";
+import { useStateContext } from '../../contexts/ContextProvider';
 
 
 const Dashboard02 = () => {
 
     const conponentPDF= useRef();
+    const { fetchUser, filiale } = useStateContext();
+
 
     const [data, setData] = useState({
-        filiale: "",
+        filiale: null,
         date: ""
     });
     const {filiales, getFiliales, setFiliales} = useDisplayContext()
@@ -48,6 +51,9 @@ const Dashboard02 = () => {
         console.log('load', data);
     }, [data])
 
+    useEffect(() => {
+        setData({...data, filiale: filiale?.id})
+    }, [filiale])
 
     function createData(calcule_Agregats, Montant_Realisation, Montant_Privision, Ecart_Valeur, taux_Realisation) {
         return { calcule_Agregats, Montant_Realisation, Montant_Privision, Ecart_Valeur, taux_Realisation };
@@ -69,6 +75,11 @@ const Dashboard02 = () => {
         }
     }, [dash])
 
+    useEffect(() => {
+        fetchUser()
+    }, [])
+
+
     const { handleSubmit, control, 
         register, getValues, watch , setValue, reset, formState, setError, formState: { errors } } = useForm({
         mode: "onChange"
@@ -76,7 +87,7 @@ const Dashboard02 = () => {
 
     const onSubmit = () => {
         setData({
-            filiale: "",
+            filiale: filiale?.id,
             date: ""
         })
     }
@@ -113,15 +124,16 @@ const Dashboard02 = () => {
         onAfterPrint:()=>alert("Data saved in PDF")
     });
 
-    console.log(kpi)
+    console.log("filiale : ", filiale);
 
     return (
-        <React.Fragment>
+        <>
             <h1> Dashboard Finance </h1>
             <div className="card animated fadeInDown">
                 <h2 style={{ gridColumn: "span 6" }}> Filtres </h2>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                <Box m="25px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="30px" > 
+                {Object.keys(rows).length !== 0 && <form onSubmit={handleSubmit(onSubmit)}>
+                
+                {(!filiale?.id) && <Box m="25px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="30px" > 
                     <label style={{ gridColumn: "span 1" }}> Finance : (filitre filiale) </label>
                     <Controller
                         control={control}
@@ -142,8 +154,9 @@ const Dashboard02 = () => {
                             </Select>
                             </FormControl>
                         )}
-                    /> 
-                </Box> 
+                    />
+                </Box>}
+                 
                 <Box m="25px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="30px" 
                 > 
                     <label style={{ gridColumn: "span 1" }}> Finance : (filitre Annee) </label>
@@ -181,58 +194,9 @@ const Dashboard02 = () => {
                         Renaitialiser
                     </Button>
                     
-                </Box>                                                        
-                </form>    
-                {/* <Button style={{ marginLeft: "10px" }} onClick={ev => {downloadReport()}} color="error"> PDF REPORT </Button>  */}
-                <Button style={{ marginLeft: "10px" }} onClick={ generatePDF} color="error"> PDF REPORT </Button> 
-                <Button style={{ marginLeft: "10px" }} onClick={ev => {exportData()}} color='success'>EXEL REPORT </Button>                  
-                {/* <div className="io">
-                    <div className="row">
-                        <div className="col-md-12">
-                        <h5 className="mt-2">User List</h5> 
-                        
-                        <div className="d-grid d-md-flex justify-content-md-end mb-3">
-                        </div> 
-                    <div ref={conponentPDF} style={{width:'100%'}}>
-                        <table className="table table-bordered" >
-                            <thead className="bg-light">
-                            <tr>
-                                <th>Sr. No</th>
-                                <th>Name</th>
-                                <th>User Name</th>
-                                <th>Email</th>
-                                <th>Phone No</th>
-                                <th>Gender</th>
-                                <th>Country</th>
-                                <th>State</th>
-                                <th>Address1</th>
-                                <th>Action</th>
-                                </tr> 
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>+</td>
-                                    <td>name</td>
-                                    <td>username</td>
-                                    <td>email</td>
-                                    <td>phoneno</td>
-                                    <td>gender</td>
-                                    <td>countryname</td>
-                                    <td>state_name</td>
-                                    <td>address1</td>
-                                    <td>
-                                        Edit
-                                    </td>
-                                </tr>
-                            </tbody>                        
-                        </table>         
-                        </div>
-                        <div className="d-grid d-md-flex justify-content-md-end mb-3">
-                        <button className="btn btn-success" onClick={ generatePDF}>PDF</button>                       
-                        </div> 
-                        </div>
-                    </div>
-                </div>   */}
+                </Box>  
+              </form>} 
+                
                 {
                     (kpi && Object.keys(kpi).length !== 0) ? 
                     <div style={{ marginTop: "50px" }}>
@@ -255,11 +219,15 @@ const Dashboard02 = () => {
                         </tbody>                        
                         </table> 
                     </div>
-                    : <CircularProgress disableShrink />
+                    : <CircularProgress sx={{ marginTop: "25px" }} disableShrink />
                 }
-                
+                <Box sx={{ marginTop: "25px" }}>
+                    <Button style={{ marginLeft: "10px" }} onClick={ generatePDF} color="error"> PDF REPORT </Button> 
+                    <Button style={{ marginLeft: "10px" }} onClick={ev => {exportData()}} color='success'>EXEL REPORT </Button>                                                                        
+    
+                </Box>
             </div>
-        </React.Fragment>
+        </>
     );
 };
 

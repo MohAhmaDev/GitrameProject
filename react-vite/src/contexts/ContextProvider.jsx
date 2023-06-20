@@ -19,11 +19,18 @@ const StateContext = createContext({
     setAdmission: () => {},
     setNotification: () => {},
     fetchUser: () => {},
+    toggleMenue: null,
+    setToggleMenue: () => {},
+    toggleDashMenu: null,
+    setToggleDashMenu: () => {},
+    toggleMenu: () => {},
 })
 
 
-export const ContextProvider = ({children}) => {
+export const ContextProvider = ({children = null}) => {
 
+    const [toggleMenue, setToggleMenue] = useState(false);
+    const [toggleDashMenu, setToggleDashMenu] = useState(false)
     const [user, setUser] = useState({});
     const [filiale, setFiliale] = useState(null);
     const [role, setRole] = useState("");
@@ -61,6 +68,18 @@ export const ContextProvider = ({children}) => {
         }
     }
 
+    function toggleMenu(toggle, Menu=false){
+
+        const menuToggle = document.querySelectorAll(toggle);
+        for (let index = 0; index < menuToggle.length; index++) {
+            menuToggle[index].classList.toggle('active');
+        }
+        if (Menu) {
+            setToggleMenue(p => !p)
+        } else {
+            setToggleDashMenu(p => !p)
+        }
+    }
 
     
 
@@ -81,6 +100,10 @@ export const ContextProvider = ({children}) => {
             setAdmission,
             setNotification,
             fetchUser: fetchUser,
+            toggleDashMenu,
+            setToggleMenue,
+            setToggleDashMenu,
+            toggleMenu
         }}>
             {children}
         </StateContext.Provider>

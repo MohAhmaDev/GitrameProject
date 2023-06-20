@@ -27,7 +27,7 @@ class DetteController extends Controller
 
         $this->authorize('viewAny', Dette::class);
 
-        if ($role === "admin") {
+        if ($role === "global") {
             $dette = Dette::all();
         } 
         else 
@@ -59,7 +59,7 @@ class DetteController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
@@ -86,7 +86,7 @@ class DetteController extends Controller
             ], 422);                 
         }
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             $id = $branch->id;
             if (!is_null($id)) {
                 if (($data['creditor_id'] !== $id) and ($data['debtor_id'] !== $id))
@@ -111,7 +111,7 @@ class DetteController extends Controller
 
         $this->authorize('view', $dette);
         
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if (($dette->debtor_id !== $branch->id) and ($dette->creditor_id !== $branch->id)) {
                 return response([
                     'message' => "you don't have the permission de to this action"
@@ -134,14 +134,14 @@ class DetteController extends Controller
 
         // $this->authorize('update', $dette);
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
 
 
         
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if (($dette->debtor_id !== $branch->id) and ($dette->creditor_id !== $branch->id)) {
                 return response([
                     'message' => "you don't have the permission de to this action"
@@ -198,14 +198,14 @@ class DetteController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first->id;
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
 
         // $this->authorize('delete', $dette);
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if (($dette->debtor_id !== $branch->id) and ($dette->creditor_id !== $branch->id)) {
                 return response([
                     'message' => "you don't have the permission de to this action"

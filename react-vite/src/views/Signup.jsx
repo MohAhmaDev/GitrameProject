@@ -25,12 +25,6 @@ export default function Signup() {
 
   const {isSubmitting, isValid, isSubmitted, isSubmitSuccessful} = formState                   
 
-  // const nameRef = useRef();
-  // const emailRef = useRef()
-  // const passwordRef = useRef()
-  // const passwordConfirmationRef = useRef()
-
-  // const [error, setError] = useState(null);
   const {setUser, setToken} = useStateContext()
 
 

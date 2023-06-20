@@ -26,7 +26,7 @@ class FinanceController extends Controller
 
         $this->authorize('viewAny', Finance::class);
 
-        if ($role === "admin") {
+        if ($role === "global") {
             $finance = Finance::all();
         } 
         else {
@@ -49,7 +49,7 @@ class FinanceController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first();
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
@@ -58,7 +58,7 @@ class FinanceController extends Controller
 
         $data = $request->validated();
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if (!is_null($branch->id)) {
                 $data['filiale_id'] = !empty($data['filiale_id']) ? $data['filiale_id'] : $branch->id;
             } else {
@@ -82,7 +82,7 @@ class FinanceController extends Controller
         $this->authorize('view', $finance);
 
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if ($finance->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
@@ -103,14 +103,14 @@ class FinanceController extends Controller
         $branch = auth()->user()->filiales->first();
 
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
         $this->authorize('update', $finance);
 
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if ($finance->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"
@@ -131,14 +131,14 @@ class FinanceController extends Controller
         $role = auth()->user()->roles->first()->name;
         $branch = auth()->user()->filiales->first->id;
 
-        $auth = ["admin", "editor"];
+        $auth = ["global", "editor"];
         if (!in_array($role, $auth)) {
             abort(403, 'Unauthorized');
         }
         $this->authorize('delete', $finance);
 
 
-        if ($role !== "admin") {
+        if ($role !== "global") {
             if ($finance->filiale_id !== $branch->id) {
                 return response([
                     'message' => "you don't have the permission de to this action"

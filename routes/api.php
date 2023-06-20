@@ -65,7 +65,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/finance_dashboard', [DashboardController::class, 'get_dashboard_finance']);
     Route::post('/rhs_dashboard', [DashboardController::class, 'get_dashboard_rhs']);
     Route::post('/dash_creance_dettes', [DashboardController::class, 'get_fcreance_dette']);
-    Route::get('date_fcreance_dettes', [DashboardController::class, 'get_Mois']);
+    Route::get('/date_fcreance_dettes', [DashboardController::class, 'get_Mois']);
+    Route::post('/dash_formation', [DashboardController::class, 'get_fformation']);
+    Route::post('/dash_femployes', [DashboardController::class, 'get_rhs_stats']);
+
 });
 
 Route::post('/signup', [AuthController::class, 'signup']);

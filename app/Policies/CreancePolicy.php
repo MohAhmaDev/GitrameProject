@@ -15,11 +15,11 @@ class CreancePolicy
     {
         $role = $user->roles()->first()->name;
 
-        if ($role === "admin") {
+        if ($role === "global") {
             return true;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A3";
+            return in_array($permission, ["A3", "A5"]);
         }    
     }
 
@@ -30,11 +30,11 @@ class CreancePolicy
     {
         $role = $user->roles()->first()->name;
 
-        if ($role === "admin") {
+        if ($role === "global") {
             return true;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A3";
+            return in_array($permission, ["A3", "A5"]);
         }    
     }
 
@@ -44,13 +44,13 @@ class CreancePolicy
     public function create(User $user): bool
     {
         $role = $user->roles()->first()->name;
-        $auth = ["admin", "basic"];
+        $auth = ["global", "basic"];
 
         if (in_array($role, $auth)) {
             return false;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A3";
+            return in_array($permission, ["A3", "A5"]);
         } 
     }
 
@@ -60,13 +60,13 @@ class CreancePolicy
     public function update(User $user, Creance $creance): bool
     {
         $role = $user->roles()->first()->name;
-        $auth = ["admin", "basic"];
+        $auth = ["global", "basic"];
 
         if (in_array($role, $auth)) {
             return false;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A3";
+            return in_array($permission, ["A3", "A5"]);
         } 
     }
 
@@ -76,13 +76,13 @@ class CreancePolicy
     public function delete(User $user, Creance $creance): bool
     {
         $role = $user->roles()->first()->name;
-        $auth = ["admin", "basic"];
+        $auth = ["global", "basic"];
 
         if (in_array($role, $auth)) {
             return false;
         } else {
             $permission = $user->admissions()->first()->name;
-            return $permission === "A3";
+            return in_array($permission, ["A3", "A5"]);
         } 
     }
 

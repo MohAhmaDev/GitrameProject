@@ -153,8 +153,15 @@ class DashboardController extends Controller
 
     public function get_dashboard_finance(Request $request) 
     {
+        $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first();
+
         $year = $request->date;
-        $filiale = $request->filiale;
+        if ($role === "global") {
+            $filiale = $request->filiale;
+        } else {
+            $filiale = $branch->id;
+        }
 
         $test = DB::table('ffinance')
         ->join('dagregats', 'ffinance.ID_Agregats', '=', 'dagregats.ID_Agregats')
@@ -217,22 +224,6 @@ class DashboardController extends Controller
             }
         }
     
-    
-        $query = $resultats->map(function ($resultat) {
-            $val1 = intval($resultat->Montant_Realisation);
-            $val2 = intval($resultat->Montant_Privision);
-            $val3 = intval($resultat->Ecart_Valeur);
-            $val4 = round(floatval($resultat->taux), 2);
-            $txt = $resultat->Agregat_calculer;
-    
-            return [
-                'Agregat_calculer' => $txt,
-                'Montant_Realisation' => $val1,
-                'Montant_Privision' => $val2,
-                'Ecart_Valeur' => $val3,
-                'taux_Realisation' => $val4
-            ];
-        });
     
         $Chiffre_affaire = $resultats->where('Agregat_calculer', 'Chiffre d\'affaires')->first();
         $Production_Periode = $resultats->where('Agregat_calculer', 'production')->first();
@@ -429,9 +420,9 @@ class DashboardController extends Controller
             $val1 = floatval($EBE->Montant_Realisation);        
             $val2 = floatval($va['Montant_Realisation']);
             $val = round($val1 / $val2, 2);
-            $taux_marge = ['label' => 'marge operationnelle', 'val' => $val];
+            $taux_marge = ['label' => 'taux de marge', 'val' => $val];
         } else {
-            $taux_marge = ['label' => 'marge operationnelle', 'val' => "-"];
+            $taux_marge = ['label' => 'taux de marge', 'val' => "-"];
         }
     
         if (is_numeric($va['Montant_Realisation']) && !is_array($Chiffre_affaire))
@@ -469,18 +460,18 @@ class DashboardController extends Controller
             $val1 = floatval($Chiffre_affaire->Montant_Realisation);
             $val2 = floatval($req04[0]->nb_employes);
             $val = round($val1 / $val2, 2);
-            $rendement_employe = ['label' => "taux d'efficience du personne", 'val' => $val];
+            $rendement_employe = ['label' => "rendement par employée", 'val' => $val];
         } else {
-            $rendement_employe = ['label' => "taux d'efficience du personne", 'val' => "-"];
+            $rendement_employe = ['label' => "rendement par employé", 'val' => "-"];
         }
         if (($req04[0]->nb_employes) && !is_array($Production_Periode)) 
         {
             $val1 = floatval($Production_Periode->Montant_Realisation);
             $val2 = floatval($req04[0]->nb_employes);
             $val = round($val1 / $val2, 2);
-            $effictif_prod = ['label' => "taux d'efficience du personne", 'val' => $val];
+            $effictif_prod = ['label' => "poids des effectifs de production", 'val' => $val];
         } else {
-            $effictif_prod = ['label' => "taux d'efficience du personne", 'val' => "-"];
+            $effictif_prod = ['label' => "poids des effectifs de production", 'val' => "-"];
         }
 
         if (($req04[0]->nb_employes) && is_numeric($va['Montant_Realisation']))
@@ -488,9 +479,9 @@ class DashboardController extends Controller
             $val1 = floatval($va['Montant_Realisation']);
             $val2 = floatval($req04[0]->nb_employes);
             $val = round($val1 / $val2, 2);
-            $taux_personne = ['label' => "taux d'efficience du personne", 'val' => $val];
+            $taux_personne = ['label' => "taux d'efficience du personnel", 'val' => $val];
         } else {
-            $taux_personne = ['label' => "taux d'efficience du personne", 'val' => "-"];
+            $taux_personne = ['label' => "taux d'efficience du personnel", 'val' => "-"];
         } 
     
 
@@ -506,7 +497,6 @@ class DashboardController extends Controller
     }
 
     public function get_dashboard_rhs(Request $request) {
-
 
         $year = $request->date;
         $filiale = $request->filiale;
@@ -650,17 +640,55 @@ class DashboardController extends Controller
     }
     
 
-    function get_fcreance_dette(Request $request) {
+    public function get_fcreance_dette(Request $request) {
         $results = DB::table('fcreances_dettes')
         ->groupBy('ID_Ent_A', 'ID_Ent_B')
         ->get();
     
+        $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first();
         $req = [];
 
         $date = $request->date;
-        $filiale = $request->filiale;
+        if ($role === "global") {
+            $filiale = $request->filiale;
+        } else {
+            $filiale = $branch->id;
+        }
+
+
+
+        for ($i = 1; $i < 19; $i++) {
+            for ($j = 1; $j < 19; $j++) {
+                $key = $i . '-' . $j;
+    
+                $filteredResult = $results->where('ID_Ent_A', $i)->where('ID_Ent_B', $j)->first();
+    
+                if ($filteredResult) {
+                    $req[$key] = $filteredResult;
+    
+                } else {
+                    $req[$key] = (object) [
+                        'ID_Ent_A' => $i,
+                        'ID_Ent_B' => $j,
+                        'Montant_Factures' => 0,
+                        'Montant_Creances' => 0,
+                        'Nbr_Factures' => 0,
+                        'Nbr_Creances' => 0,
+                        'Montant_Dettes' => 0,
+                        'Nbr_Dettes' => 0,
+                        'Creances_vs_Dettes' => 0
+                    ];
+                }
+            }
+        
+        }
+    
+        $finalResults = array_values($req);
 
         if (!empty($date) or !empty($filiale)) {
+
+            $req = [];
 
             if (!empty($date)) {
                 $results = DB::table('fcreances_dettes')
@@ -694,43 +722,285 @@ class DashboardController extends Controller
                 }
 
                 $finalResults = array_values($req);
-                return response($finalResults);
             }
         } 
-        for ($i = 1; $i < 19; $i++) {
-            for ($j = 1; $j < 19; $j++) {
-                $key = $i . '-' . $j;
+
+        // *********************************************** Groupe *********************************************************        
+        $resultats = DB::table('fcreances_dettes')
+        ->join('dentreprise', 'fcreances_dettes.ID_Ent_B', '=', 'dentreprise.ID_Ent')
+        ->selectRaw('*, Grp_Ent')
+        ->get();
+        $req01 = [];
     
-                $filteredResult = $results->where('ID_Ent_A', $i)->where('ID_Ent_B', $j)->first();
+        $maxId = DB::table('dentreprise')->max('ID_Ent');
+        $groupes = DB::table('dentreprise')->selectRaw('DISTINCT(Grp_Ent)')->get();
     
-                if ($filteredResult) {
-                    $req[$key] = $filteredResult;
+        foreach ($groupes as $groupe) {
+            for ($i = 1; $i < 19; $i++) {
+                $G = $groupe->Grp_Ent;
+                $key = $i . "-" . $G;
+                for ($j = 1; $j <= intval($maxId); $j++) { // Changement : inclusif (<=) au lieu de strictement inférieur (<)
+                    $resultat = $resultats
+                        ->where('Grp_Ent', $G)
+                        ->where('ID_Ent_A', $i)
+                        ->where('ID_Ent_B', $j)
+                        ->first(); // Changement : utilisez "first()" pour obtenir un seul résultat
     
-                } else {
-                    $req[$key] = (object) [
-                        'ID_Ent_A' => $i,
-                        'ID_Ent_B' => $j,
-                        'Montant_Factures' => 0,
-                        'Montant_Creances' => 0,
-                        'Nbr_Factures' => 0,
-                        'Nbr_Creances' => 0,
-                        'Montant_Dettes' => 0,
-                        'Nbr_Dettes' => 0,
-                        'Creances_vs_Dettes' => 0
-                    ];
+                    if ($resultat) {
+                        if (isset($req01[$key])) {
+                            $req01[$key]->Montant_Factures += $resultat->Montant_Factures;
+                            $req01[$key]->Nbr_Factures += $resultat->Nbr_Factures;
+                            $req01[$key]->Nbr_Creances += $resultat->Nbr_Creances;
+                            $req01[$key]->Montant_Creances += $resultat->Montant_Creances;
+                            $req01[$key]->Montant_Dettes += $resultat->Montant_Dettes;
+                            $req01[$key]->Nbr_Dettes += $resultat->Nbr_Dettes;
+                            $req01[$key]->Creances_vs_Dettes += $resultat->Creances_vs_Dettes;
+                        } else {
+                            $req01[$key] = (object) [
+                                'ID_Ent_A' => $i,
+                                'Grp_Ent' => $G,
+                                'Montant_Factures' => $resultat->Montant_Factures,
+                                'Montant_Creances' => 0,
+                                'Nbr_Factures' => $resultat->Nbr_Factures,
+                                'Nbr_Creances' => 0,
+                                'Montant_Dettes' => $resultat->Montant_Dettes,
+                                'Nbr_Dettes' => $resultat->Nbr_Dettes,
+                                'Creances_vs_Dettes' => $resultat->Creances_vs_Dettes
+                            ];
+                        }
+                    } else {
+                        if (!isset($req01[$key])) {
+                            $req01[$key] = (object) [
+                                'ID_Ent_A' => $i,
+                                'Grp_Ent' => $G,
+                                'Montant_Factures' => 0,
+                                'Montant_Creances' => 0,
+                                'Nbr_Factures' => 0,
+                                'Nbr_Creances' => 0,
+                                'Montant_Dettes' => 0,
+                                'Nbr_Dettes' => 0,
+                                'Creances_vs_Dettes' => 0
+                            ];
+                        }
+                    }
                 }
             }
-        
         }
     
+        $finalResults2 = array_values($req01);
+        $groupe_list = DB::table('dentreprise')->select('Grp_Ent')->distinct()->get();
+
+        if (!empty($date) or !empty($filiale)) {
+            if (!empty($date)) {
+                $resultats = DB::table('fcreances_dettes')
+                ->join('dentreprise', 'fcreances_dettes.ID_Ent_B', '=', 'dentreprise.ID_Ent')
+                ->selectRaw('*, Grp_Ent')
+                ->where('fcreances_dettes.ID_Temps', $date)
+                ->get();
+            }
+
+            if (!empty($filiale)) {
+                $req01 = [];
+                foreach ($groupes as $g) {
+                    $G = $g->Grp_Ent;
+                    $key = $filiale . "-" . $G;
+                    for ($j = 1; $j <= intval($maxId); $j++) { // Changement : inclusif (<=) au lieu de strictement inférieur (<)
+                        $resultat = $resultats
+                            ->where('Grp_Ent', $G)
+                            ->where('ID_Ent_A', $filiale)
+                            ->where('ID_Ent_B', $j)
+                            ->first(); // Changement : utilisez "first()" pour obtenir un seul résultat
         
+                        if ($resultat) {
+                            if (isset($req01[$key])) {
+                                $req01[$key]->Montant_Factures += $resultat->Montant_Factures;
+                                $req01[$key]->Nbr_Factures += $resultat->Nbr_Factures;
+                                $req01[$key]->Nbr_Creances += $resultat->Nbr_Creances;
+                                $req01[$key]->Montant_Creances += $resultat->Montant_Creances;
+                                $req01[$key]->Montant_Dettes += $resultat->Montant_Dettes;
+                                $req01[$key]->Nbr_Dettes += $resultat->Nbr_Dettes;
+                                $req01[$key]->Creances_vs_Dettes += $resultat->Creances_vs_Dettes;
+                            } else {
+                                $req01[$key] = (object) [
+                                    'ID_Ent_A' => $filiale,
+                                    'Grp_Ent' => $G,
+                                    'Montant_Factures' => $resultat->Montant_Factures,
+                                    'Montant_Creances' => 0,
+                                    'Nbr_Factures' => $resultat->Nbr_Factures,
+                                    'Nbr_Creances' => 0,
+                                    'Montant_Dettes' => $resultat->Montant_Dettes,
+                                    'Nbr_Dettes' => $resultat->Nbr_Dettes,
+                                    'Creances_vs_Dettes' => $resultat->Creances_vs_Dettes
+                                ];
+                            }
+                        } else {
+                            if (!isset($req01[$key])) {
+                                $req01[$key] = (object) [
+                                    'ID_Ent_A' => $filiale,
+                                    'Grp_Ent' => $G,
+                                    'Montant_Factures' => 0,
+                                    'Montant_Creances' => 0,
+                                    'Nbr_Factures' => 0,
+                                    'Nbr_Creances' => 0,
+                                    'Montant_Dettes' => 0,
+                                    'Nbr_Dettes' => 0,
+                                    'Creances_vs_Dettes' => 0
+                                ];
+                            }
+                        }
+                    }
+                }
     
-        $finalResults = array_values($req);
-        return response($finalResults);
+    
+                $finalResults2 = array_values($req01);
+            }
+        } 
+
+        // ************************************ Secteur *******************************************************************
+
+        $request_sec = DB::table('fcreances_dettes')
+        ->join('dentreprise', 'fcreances_dettes.ID_Ent_B', '=', 'dentreprise.ID_Ent')
+        ->selectRaw('*, Sect_Ent')
+        ->get();
+        $req02 = [];
+
+        $maxId1 = DB::table('dentreprise')->max('ID_Ent');
+        $secteurs = DB::table('dentreprise')->selectRaw('DISTINCT(Sect_Ent)')->get();
+
+
+        foreach ($secteurs as $secteur) {
+            for ($i = 1; $i < 19; $i++) {
+                $S = $secteur->Sect_Ent;
+                $key = $i . "-" . $S;
+                for ($j = 1; $j <= intval($maxId1); $j++) { // Changement : inclusif (<=) au lieu de strictement inférieur (<)
+                    $resultat = $request_sec
+                        ->where('Sect_Ent', $S)
+                        ->where('ID_Ent_A', $i)
+                        ->where('ID_Ent_B', $j)
+                        ->first(); // Changement : utilisez "first()" pour obtenir un seul résultat
+
+                    if ($resultat) {
+                        if (isset($req02[$key])) {
+                            $req02[$key]->Montant_Factures += $resultat->Montant_Factures;
+                            $req02[$key]->Nbr_Factures += $resultat->Nbr_Factures;
+                            $req02[$key]->Nbr_Creances += $resultat->Nbr_Creances;
+                            $req02[$key]->Montant_Creances += $resultat->Montant_Creances;
+                            $req02[$key]->Montant_Dettes += $resultat->Montant_Dettes;
+                            $req02[$key]->Nbr_Dettes += $resultat->Nbr_Dettes;
+                            $req02[$key]->Creances_vs_Dettes += $resultat->Creances_vs_Dettes;
+                        } else {
+                            $req02[$key] = (object) [
+                                'ID_Ent_A' => $i,
+                                'Sect_Ent' => $S,
+                                'Montant_Factures' => $resultat->Montant_Factures,
+                                'Montant_Creances' => 0,
+                                'Nbr_Factures' => $resultat->Nbr_Factures,
+                                'Nbr_Creances' => 0,
+                                'Montant_Dettes' => $resultat->Montant_Dettes,
+                                'Nbr_Dettes' => $resultat->Nbr_Dettes,
+                                'Creances_vs_Dettes' => $resultat->Creances_vs_Dettes
+                            ];
+                        }
+                    } else {
+                        if (!isset($req02[$key])) {
+                            $req02[$key] = (object) [
+                                'ID_Ent_A' => $i,
+                                'Sect_Ent' => $S,
+                                'Montant_Factures' => 0,
+                                'Montant_Creances' => 0,
+                                'Nbr_Factures' => 0,
+                                'Nbr_Creances' => 0,
+                                'Montant_Dettes' => 0,
+                                'Nbr_Dettes' => 0,
+                                'Creances_vs_Dettes' => 0
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+
+        $finalResults3 = array_values($req02);
+        $secteur_list = DB::table('dentreprise')->select('Sect_Ent')->distinct()->get();
+
+        if (!empty($date) or !empty($filiale)) {
+            if (!empty($date)) {
+                $request_sec = DB::table('fcreances_dettes')
+                ->join('dentreprise', 'fcreances_dettes.ID_Ent_B', '=', 'dentreprise.ID_Ent')
+                ->selectRaw('*, Sect_Ent')
+                ->where('fcreances_dettes.ID_Temps', $date)
+                ->get();
+            }
+
+            if (!empty($filiale)) {
+                $req02 = [];
+                foreach ($secteurs as $secteur) {
+                        $S = $secteur->Sect_Ent;
+                            $i = $filiale;
+                            $key = $i . "-" . $S;
+                            for ($j = 1; $j <= intval($maxId1); $j++) { // Changement : inclusif (<=) au lieu de strictement inférieur (<)
+                                $resultat = $request_sec
+                                    ->where('Sect_Ent', $S)
+                                    ->where('ID_Ent_A', $i)
+                                    ->where('ID_Ent_B', $j)
+                                    ->first(); // Changement : utilisez "first()" pour obtenir un seul résultat
+                
+                                if ($resultat) {
+                                    if (isset($req02[$key])) {
+                                        $req02[$key]->Montant_Factures += $resultat->Montant_Factures;
+                                        $req02[$key]->Nbr_Factures += $resultat->Nbr_Factures;
+                                        $req02[$key]->Nbr_Creances += $resultat->Nbr_Creances;
+                                        $req02[$key]->Montant_Creances += $resultat->Montant_Creances;
+                                        $req02[$key]->Montant_Dettes += $resultat->Montant_Dettes;
+                                        $req02[$key]->Nbr_Dettes += $resultat->Nbr_Dettes;
+                                        $req02[$key]->Creances_vs_Dettes += $resultat->Creances_vs_Dettes;
+                                    } else {
+                                        $req02[$key] = (object) [
+                                            'ID_Ent_A' => $i,
+                                            'Sect_Ent' => $S,
+                                            'Montant_Factures' => $resultat->Montant_Factures,
+                                            'Montant_Creances' => 0,
+                                            'Nbr_Factures' => $resultat->Nbr_Factures,
+                                            'Nbr_Creances' => 0,
+                                            'Montant_Dettes' => $resultat->Montant_Dettes,
+                                            'Nbr_Dettes' => $resultat->Nbr_Dettes,
+                                            'Creances_vs_Dettes' => $resultat->Creances_vs_Dettes
+                                        ];
+                                    }
+                                } else {
+                                    if (!isset($req02[$key])) {
+                                        $req02[$key] = (object) [
+                                            'ID_Ent_A' => $i,
+                                            'Sect_Ent' => $S,
+                                            'Montant_Factures' => 0,
+                                            'Montant_Creances' => 0,
+                                            'Nbr_Factures' => 0,
+                                            'Nbr_Creances' => 0,
+                                            'Montant_Dettes' => 0,
+                                            'Nbr_Dettes' => 0,
+                                            'Creances_vs_Dettes' => 0
+                                        ];
+                                    }
+                                }
+                            }                        
+                        
+                    
+                }
+
+
+                $finalResults3 = array_values($req02);
+            }
+        } 
+
+
+        return response(["data2" => $finalResults2, "data1" => $finalResults,
+        'groupe' => $groupe_list, 'secteur' => $secteur_list, "data3" => $finalResults3]);
     }
 
 
-    function get_Mois() {
+    
+    public function get_Mois() {
         $result = DB::table('fcreances_dettes')
         ->join('dtemps', 'dtemps.ID_Temps', '=', 'fcreances_dettes.ID_Temps')
         ->select(DB::raw('DISTINCT(DATE_FORMAT(dtemps.DATE, "%Y-%m")) as date_mois, fcreances_dettes.ID_Temps as id'))
@@ -741,4 +1011,88 @@ class DashboardController extends Controller
     }
 
 
+
+    public function get_fformation(Request $request) {
+
+        $result1 = DB::table('fformation')->sum('Montant');
+        $result2 = DB::table('fformation')->count('Nombre_Eff');
+    
+        $result3 = DB::table('fformation')
+        ->join('ddomaine', 'fformation.ID_Domaine', '=', 'ddomaine.ID_Domaine')
+        ->select(DB::raw('COUNT(fformation.Nombre_Eff) as nb_effectif, SUM(fformation.Montant) as montant, ddomaine.Domaine as Domaine'))
+        ->groupBy('ddomaine.Domaine')
+        ->get();
+    
+    
+        return response(['type_formation' => $result3, 'Montant' => $result2,
+        'NB_personne' => $result1]);
+    }
+
+
+    public function get_rhs_stats() {
+
+
+        $result = DB::table('femploye')
+        ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
+        ->join('dsexe', 'femploye.ID_Sexe', '=', 'dsexe.ID_Sexe')
+        ->join('dtemps_travail', 'femploye.ID_Temps_Trav', '=', 'dtemps_travail.ID_Temps_Trav')
+        ->join('dcontrat', 'femploye.ID_Contrat', '=', 'dcontrat.ID_Contrat')
+        ->join('dage', 'femploye.ID_Age', '=', 'dage.ID_Age')
+        ->select('femploye.Nombre_Eff as nb_effectifs', 'dscociopro.Scocipro as statue',
+            'dcontrat.Type_Contrat as contact', 'dtemps_travail.Temps_Travail as temps',
+            'dsexe.Sexe as sexe', 'dage.Tranche_Age as age')
+        ->distinct()
+        ->get();
+    
+        $sexes = ["Femme", "Homme"];
+        $temps = DB::table('dtemps_travail')->select('Temps_Travail')->distinct()->get();
+        $status = DB::table('dscociopro')->select('Scocipro')->distinct()->get();
+        $ages = DB::table('dage')->select('Tranche_Age')->distinct()->get();
+        $contracts = ["CDI", "CDD"];
+        $req = [];
+    
+        foreach ($status as $statu) {
+            foreach ($sexes as $sexe) {
+                foreach ($ages as $age) {
+                    foreach ($temps as $temp) {
+                        foreach ($contracts as $contract) {
+                            $key = $statu->Scocipro . '-' . $sexe . '-' . $age->Tranche_Age . '-' . $temp->Temps_Travail . '-' . $contract;
+                            $finalResult = $result->where('sexe', $sexe)
+                                ->where('statue', $statu->Scocipro)
+                                ->where('contact', $contract)
+                                ->where('age', $age->Tranche_Age)
+                                ->where('temps', $temp->Temps_Travail)
+                                ->first();
+    
+                            if ($finalResult) {
+                                $req[$key] = $finalResult;
+                            } else {
+                                $req[$key] = (object) [
+                                    "nb_effectifs" => 0,
+                                    "statue" => $statu->Scocipro,
+                                    "contact" => $contract,
+                                    "temps" => $temp->Temps_Travail,
+                                    "sexe" => $sexe,
+                                    "age" => $age->Tranche_Age
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        $finalResults = array_values($req);
+        $filteredResults = collect($finalResults)->where('statue', 'Cadre')->all();
+
+
+        return [
+            'tab' => array_values($filteredResults),
+            'tranchAge' => $ages
+        ];
+    }
+
+
 }
+
+

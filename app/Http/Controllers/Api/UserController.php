@@ -22,7 +22,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::whereDoesntHave('roles', function($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'admin')->orWhere('name', 'global');
         })->get();        
         return UserResource::collection($users);
     }

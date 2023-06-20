@@ -19,7 +19,7 @@ const StateContext = createContext({
 })
 
 
-export const DisplayContext = ({children}) => {
+export const DisplayContext = ({children = null}) => {
     const [users, setUsers] = useState({});
     const [roles, setRoles] = useState(null);
     const [filiales, setFiliales] = useState({});

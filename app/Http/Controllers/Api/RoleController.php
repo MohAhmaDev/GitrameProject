@@ -14,7 +14,7 @@ class RoleController extends Controller
 
     public function index() 
     {
-        $role = Role::where('name', '!=', 'admin')->get();
+        $role = Role::whereNotIn('name', ['admin', 'global'])->get();
         return response([
             'role' => $role->setVisible(['id', 'name'])
         ]);
