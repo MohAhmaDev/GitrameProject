@@ -62,7 +62,6 @@ class DashboardController extends Controller
         ]); 
     }
 
-
     public function get_FFinances() 
     {
         $results = DB::table('ffinance')
@@ -185,7 +184,8 @@ class DashboardController extends Controller
         ->get();
     
         $NBEmployes = DB::table('femploye')
-        ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'));
+        ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'))
+        ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps');
     
         $req04 = $NBEmployes
         ->get();
@@ -198,7 +198,7 @@ class DashboardController extends Controller
             ->get();
     
             $req04 = $NBEmployes
-            ->where('dtemps.annee', $year)
+            ->where('dtemps.annee', '<=', $year)
             ->where('femploye.ID_Ent', $filiale)
             ->get();
         } else {
@@ -209,7 +209,7 @@ class DashboardController extends Controller
                 ->get();  
                 
                 $req04 = $NBEmployes
-                ->where('dtemps.annee', $year)
+                ->where('dtemps.annee', '<=', $year)
                 ->get();
             } 
             if (!empty($filiale)) {
@@ -223,6 +223,7 @@ class DashboardController extends Controller
                 ->get();
             }
         }
+    
     
     
         $Chiffre_affaire = $resultats->where('Agregat_calculer', 'Chiffre d\'affaires')->first();
@@ -498,8 +499,15 @@ class DashboardController extends Controller
 
     public function get_dashboard_rhs(Request $request) {
 
+        $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first();
+
         $year = $request->date;
-        $filiale = $request->filiale;
+        if ($role === "global") {
+            $filiale = $request->filiale;
+        } else {
+            $filiale = $branch->id;
+        }
 
         $res01 = DB::table('femploye')
         ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
@@ -529,35 +537,35 @@ class DashboardController extends Controller
         ->get();
 
         $NBEmployes = DB::table('femploye')
-        ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'));
-
-        $req04 = $NBEmployes
-        ->get();
-
+        ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'))
+        ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps');
+    
+        $req04 = $NBEmployes->get();
+    
         if (!empty($year) && !empty($filiale)) {
             $req01 = $res01
             ->where('dtemps.annee', $year)
             ->where('femploye.ID_Ent', $filiale)
             ->groupBy('gestion_ressource')
             ->get();
-
+    
             $req02 = $res02
             ->where('dtemps.annee', $year)
             ->where('femploye.ID_Ent', $filiale)
             ->groupBy('gestion_ressource')
             ->get();
-
+    
             $req03 = $res03
             ->where('dtemps.annee', $year)
             ->where('femploye.ID_Ent', $filiale)
             ->groupBy('gestion_ressource')
             ->get();
-
+    
             $req04 = $NBEmployes
             ->where('dtemps.annee', $year)
             ->where('femploye.ID_Ent', $filiale)
             ->get();
-
+    
         } else {
             if (!empty($year)) {
                 $req01 = $res01
@@ -576,7 +584,7 @@ class DashboardController extends Controller
                 ->get();   
                 
                 $req04 = $NBEmployes
-                ->where('dtemps.annee', $year)
+                ->where('dtemps.annee', ">=", $year)
                 ->get();
             } 
             if (!empty($filiale)) {
@@ -639,7 +647,6 @@ class DashboardController extends Controller
         return response(["ebe1" => $result, "ebe2" => $result2, "total" => $req04]);
     }
     
-
     public function get_fcreance_dette(Request $request) {
         $results = DB::table('fcreances_dettes')
         ->groupBy('ID_Ent_A', 'ID_Ent_B')
@@ -998,8 +1005,6 @@ class DashboardController extends Controller
         'groupe' => $groupe_list, 'secteur' => $secteur_list, "data3" => $finalResults3]);
     }
 
-
-    
     public function get_Mois() {
         $result = DB::table('fcreances_dettes')
         ->join('dtemps', 'dtemps.ID_Temps', '=', 'fcreances_dettes.ID_Temps')
@@ -1010,27 +1015,61 @@ class DashboardController extends Controller
         return response($result);
     }
 
-
-
     public function get_fformation(Request $request) {
 
         $result1 = DB::table('fformation')->sum('Montant');
         $result2 = DB::table('fformation')->count('Nombre_Eff');
     
-        $result3 = DB::table('fformation')
+        $result = DB::table('fformation')
         ->join('ddomaine', 'fformation.ID_Domaine', '=', 'ddomaine.ID_Domaine')
         ->select(DB::raw('COUNT(fformation.Nombre_Eff) as nb_effectif, SUM(fformation.Montant) as montant, ddomaine.Domaine as Domaine'))
-        ->groupBy('ddomaine.Domaine')
-        ->get();
+        ->groupBy('ddomaine.Domaine');
+
+
+        $result3 = $result->get();
+
+        $role = auth()->user()->roles->first()->name;
+        $branch = auth()->user()->filiales->first();
+
+        $date = $request->date;
+        if ($role === "global") {
+            $filiale = $request->filiale;
+        } else {
+            $filiale = $branch->id;
+        }
+
+        
+        if (!empty($date) or !empty($filiale)) {
+
+            if (!empty($date)) {
+                $result3 = $result
+                ->where('dtemps.annee', $date)
+                ->get();
+            }
+
+            if (!empty($filiale)) {
+                $result3 = $result
+                ->where('fformation.ID_Ent', $filiale)
+                ->get();
+            }
+
+            if (!empty($date) && !empty($filiale)) {
+                $result3 = $result
+                ->where('dtemps.annee', $date)
+                ->where('fformation.ID_Ent', $filiale)
+                ->get();                
+            }
+        } 
     
     
         return response(['type_formation' => $result3, 'Montant' => $result2,
         'NB_personne' => $result1]);
     }
 
+    public function get_rhs_stats(Request $request) {
 
-    public function get_rhs_stats() {
 
+        $statue = $request->statue;
 
         $result = DB::table('femploye')
         ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
@@ -1044,10 +1083,12 @@ class DashboardController extends Controller
         ->distinct()
         ->get();
     
+
         $sexes = ["Femme", "Homme"];
         $temps = DB::table('dtemps_travail')->select('Temps_Travail')->distinct()->get();
         $status = DB::table('dscociopro')->select('Scocipro')->distinct()->get();
         $ages = DB::table('dage')->select('Tranche_Age')->distinct()->get();
+
         $contracts = ["CDI", "CDD"];
         $req = [];
     
@@ -1083,12 +1124,18 @@ class DashboardController extends Controller
         }
     
         $finalResults = array_values($req);
-        $filteredResults = collect($finalResults)->where('statue', 'Cadre')->all();
+
+        if (!empty($statue)) {
+            $filteredResults = collect($finalResults)->where('statue', $statue)->all();
+        } else {
+            $filteredResults = collect($finalResults)->where('statue', 'Cadre')->all();
+        }
 
 
         return [
             'tab' => array_values($filteredResults),
-            'tranchAge' => $ages
+            'tranchAge' => $ages, 
+            'status' => $status
         ];
     }
 

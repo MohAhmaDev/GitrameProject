@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axiosClient from '../../axios-client';
 import { useDisplayContext } from '../../contexts/DisplayContext';
 import { Box,
@@ -27,11 +27,11 @@ const Dashboard03 = () => {
     const conponentPDF = useRef();
     const { fetchUser, filiale } = useStateContext();
 
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [dates, setDates] = useState({});
     const [Form, setForm] = useState({
-        filiale: "",
+        filiale: null,
         date: ""
     });
     const [checked, setChecked] = useState({
@@ -184,11 +184,16 @@ const Dashboard03 = () => {
         return rows;
     };
 
-    useEffect(() => {
+    useMemo(() => {
         fetchUser()
     }, [])
 
     useEffect(() => {
+        if (Form.date === "" || Form.filiale === null) {
+            setData1({})
+            setData2({})
+            setData3({})            
+        }
         setIsLoading(true)
         getFiliales();
         getDates();
@@ -199,28 +204,16 @@ const Dashboard03 = () => {
         setForm({...Form, filiale: filiale?.id})
     }, [filiale])
 
+
     const onSubmit = () => {
         setForm({
-            filiale: null,
+            filiale: filiale?.id,
             date: ""
         })
         getData();
     }
 
-    console.log("filiale : ", filiale)
 
-    const downloadReport = () => {
-        const invoice = document.getElementById("ftable");
-        console.log(invoice);
-        var opt = {
-            margin: 1,
-            filename: 'myfile.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-        html2pdf().from(invoice).set(opt).save();
-    }
 
     const exportData = () => {
         const Table2Excel = window.Table2Excel;
@@ -232,21 +225,20 @@ const Dashboard03 = () => {
             preserveColors:true
         });
         table2excel.export(document.querySelectorAll("table"));	
-        console.log("ou ! oui vous l'avais")
     }
 
     const generatePDF= useReactToPrint({
         content: ()=>conponentPDF.current,
         documentTitle:"Userdata",
-        onAfterPrint:()=>alert("Data saved in PDF")
+        onAfterPrint:()=>console.log("Data saved in PDF")
     });
 
-
-    console.log("data3 : ",data3);
-    console.log("data2 : ",data2);
-    console.log("data1 : ",data1);
-    console.log('groupe : ', groupe);
-    console.log('secteur : ', secteur);
+    // console.log("filiale : ", filiale)
+    // console.log("data3 : ",data3);
+    // console.log("data2 : ",data2);
+    // console.log("data1 : ",data1);
+    // console.log('groupe : ', groupe);
+    // console.log('secteur : ', secteur);
 
     return (
         <div style={{ background: "#fff", padding: "20px", borderRadius: "5px" }}>
@@ -320,7 +312,7 @@ const Dashboard03 = () => {
 
             </Box>
             <div ref={conponentPDF}>
-                <h2 style={{ textAlign: "center" }}> Table Inter filiale </h2>
+                <h2 style={{ textAlign: "center", marginBottom: "25px" }}> Tableaux Intra Groupe Gitrama  </h2>
                 {Object.keys(data1).length !== 0 ?
                 <table className="ftable" id="ftable" style={{ marginBottom: "25px" }}>
                     <thead>
@@ -335,8 +327,8 @@ const Dashboard03 = () => {
                         {getTable()}
                     </tbody>
                 </table>: <CircularProgress disableShrink />}
-                <h2 style={{ textAlign: "center" }}>  Par groupe Inter </h2>
-                {Object.keys(data2).length !== 0 ?
+                <h2 style={{ textAlign: "center", marginBottom: "25px" }}>  Tableaux Récapulatif par Groupe </h2>
+                {(Object.keys(data2).length !== 0) ?
                 <table className="ftable" id="ftable" style={{ marginBottom: "25px" }}>
                     <thead>
                         <tr>
@@ -352,8 +344,8 @@ const Dashboard03 = () => {
                         {getTable2()}
                     </tbody>
                 </table>: <CircularProgress disableShrink />}
-                <h2 style={{ textAlign: "center" }}>  Par secteur Inter </h2>
-                {Object.keys(data3).length !== 0 ?
+                <h2 style={{ textAlign: "center", marginBottom: "25px" }}> Tableaux Récapulatif par Secteur </h2>
+                {(Object.keys(data3).length !== 0) ?
                 <table className="ftable" id="ftable">
                     <thead>
                         <tr>

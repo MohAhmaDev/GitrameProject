@@ -11,7 +11,8 @@ const PrivateRoute = ({redirectpath = '/dashboard', children}) => {
         fetchUser();
     }, [])
 
-    const admit = ['admin', 'editor']
+    const admit = ['admin', 'editor'];
+
     if (!admit.includes(role)) {
         return <Navigate to={redirectpath} replace/>;
     } else {

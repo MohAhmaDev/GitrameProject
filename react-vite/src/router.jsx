@@ -26,8 +26,8 @@ import StagiaresForm from './views/StagiaresForm'
 import Formation from './views/Formations';
 import FormationForm from './views/FormationForm'
 import UserTest from './views/UserTest';
-import TemplateTest from './views/TemplateTest';
 import GitramReports from './views/MUI/GitramReports';
+import TableRHS from './views/TableRHS';
 
 
 const router = createBrowserRouter([
@@ -123,7 +123,7 @@ const router = createBrowserRouter([
             },
             {
                 path: '/dashboard',
-                element: <Dashboard />
+                element: <Dashboard /> 
             },
             {
                 path: '/dashboard/RHS',
@@ -138,13 +138,9 @@ const router = createBrowserRouter([
                 element: <Dashboard03 />
             },
             {
-                path: '/test',
-                element: <TemplateTest />
-            },
-            {
                 path: '/report',
                 element: <GitramReports />
-            }
+            },
         ]
     },
     {
@@ -158,11 +154,9 @@ const router = createBrowserRouter([
             {
                 path: '/Signup',
                 element: <Signup />
-            }
+            },
         ]
     },
-
-
     {
         path: '*',
         element: <NotFound />

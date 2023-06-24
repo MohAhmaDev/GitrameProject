@@ -9,13 +9,13 @@ import { Link } from 'react-router-dom';
 import 'table2excel';
 import { useReactToPrint } from "react-to-print";
 import { useStateContext } from '../../contexts/ContextProvider';
+import GitramReports from '../MUI/GitramReports';
 
 
+  
 const Dashboard02 = () => {
-
-    const conponentPDF= useRef();
+    const componentPDF = useRef();
     const { fetchUser, filiale } = useStateContext();
-
 
     const [data, setData] = useState({
         filiale: null,
@@ -48,7 +48,7 @@ const Dashboard02 = () => {
         getDates()
         getFiliales();
         getFinanceDashboard(data);
-        console.log('load', data);
+        // console.log('load', data);
     }, [data])
 
     useEffect(() => {
@@ -70,7 +70,7 @@ const Dashboard02 = () => {
         
                 return createData(Agregat_calculer, Montant_Realisation, Montant_Privision, Ecart_Valeur, taux_Realisation);
             });
-            console.log("rows", rows) 
+            // console.log("rows", rows) 
             setRows(rows)         
         }
     }, [dash])
@@ -94,7 +94,7 @@ const Dashboard02 = () => {
 
     const downloadReport = () => {
         const invoice = document.getElementById("print");
-        console.log(invoice);
+        // console.log(invoice);
         var opt = {
             margin: 1,
             filename: 'myfile.pdf',
@@ -115,17 +115,24 @@ const Dashboard02 = () => {
             preserveColors:true
         });
         table2excel.export(document.querySelectorAll("table"));	
-        console.log("ou ! oui vous l'avais")
     }
 
+    // const generatePDF = useReactToPrint({
+    //     content: () => {
+    //       return (
+    //         <div>
+    //           TEST
+    //         </div>
+    //       );
+    //     },
+    //     documentTitle: "Userdata",
+    //     onAfterPrint: () => alert("Data saved in PDF")
+    //   });
     const generatePDF= useReactToPrint({
-        content: ()=>conponentPDF.current,
+        content: ()=>componentPDF.current,
         documentTitle:"Userdata",
         onAfterPrint:()=>alert("Data saved in PDF")
     });
-
-    console.log("filiale : ", filiale);
-
     return (
         <>
             <h1> Dashboard Finance </h1>
@@ -184,8 +191,8 @@ const Dashboard02 = () => {
 
                 
                 {(rows && Object.keys(rows).length !== 0) ? 
-                <Box ref={conponentPDF}>
-                    <h2 style={{ marginBottom: "10px", textAlign: "center" }}> Agrégat Finance Cumuler </h2>
+                <Box ref={componentPDF}>
+                    <h2 style={{ marginBottom: "10px", textAlign: "center" }}> Agrégat Finance </h2>
                     <DenseTable data={rows} id="print"/>
                 </Box>
                  : <CircularProgress disableShrink />}
@@ -200,7 +207,9 @@ const Dashboard02 = () => {
                 {
                     (kpi && Object.keys(kpi).length !== 0) ? 
                     <div style={{ marginTop: "50px" }}>
-                        <h2 style={{ marginBottom: "10px", textAlign: "center" }}> Agrégat Finance Cumuler </h2>
+                        <h2 style={{ marginBottom: "10px", textAlign: "center" }}> 
+                            les Indicateurs de Performances Finance 
+                        </h2>
                         <h2></h2>
                         <table>
                         <thead>
@@ -224,7 +233,6 @@ const Dashboard02 = () => {
                 <Box sx={{ marginTop: "25px" }}>
                     <Button style={{ marginLeft: "10px" }} onClick={ generatePDF} color="error"> PDF REPORT </Button> 
                     <Button style={{ marginLeft: "10px" }} onClick={ev => {exportData()}} color='success'>EXEL REPORT </Button>                                                                        
-    
                 </Box>
             </div>
         </>

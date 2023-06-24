@@ -933,24 +933,111 @@ Route::get('addFormation', function () {
 
 
 Route::get('dash_rhs', function () {
-    $req01 = DB::table('femploye')
+
+
+    $year = 2016;
+    $filiale = "";
+
+    $res01 = DB::table('femploye')
     ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
-    ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN ID_Sexe = 2 THEN "femme" WHEN ID_Sexe = 1 THEN "homme" END AS gestion_ressource'))
+    ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps')
+    ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN ID_Sexe = 2 THEN "femme" WHEN ID_Sexe = 1 THEN "homme" END AS gestion_ressource'));
+    
+    $req01 = $res01
     ->groupBy('gestion_ressource')
     ->get();
 
-    $req02 = DB::table('femploye')
+    $res02 = DB::table('femploye')
     ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
-    ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN dscociopro.Scocipro = "Cadre superieur" THEN "cadre superieur" WHEN dscociopro.Scocipro = "Cadre" THEN "cadre" WHEN dscociopro.Scocipro = "Cadre dirigeant" THEN "cadre dirigeant" WHEN dscociopro.Scocipro = "maitrise" THEN "maitrise" WHEN dscociopro.Scocipro = "execution" THEN "execution" ELSE "retraite" END AS gestion_ressource'))
+    ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps')
+    ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN dscociopro.Scocipro = "Cadre superieur" THEN "cadre superieur" WHEN dscociopro.Scocipro = "Cadre" THEN "cadre" WHEN dscociopro.Scocipro = "Cadre dirigeant" THEN "cadre dirigeant" WHEN dscociopro.Scocipro = "maitrise" THEN "maitrise" WHEN dscociopro.Scocipro = "execution" THEN "execution" ELSE "retraite" END AS gestion_ressource'));
+
+    $req02 = $res02
+    ->groupBy('gestion_ressource')
+    ->get(); 
+
+    $res03 = DB::table('femploye')
+    ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
+    ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps')
+    ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN dscociopro.Scocipro IN ("maitrise", "execution") THEN "personnelle technique" WHEN dscociopro.Scocipro NOT IN ("maitrise", "execution") THEN "personnelle administratifs" END AS gestion_ressource'));
+
+    $req03 = $res03
     ->groupBy('gestion_ressource')
     ->get();
 
-    $req03 = DB::table('femploye')
-    ->join('dscociopro', 'femploye.ID_scociopro', '=', 'dscociopro.ID_scociopro')
-    ->select(DB::raw('SUM(femploye.Nombre_Eff) as nb_employes'), DB::raw('CASE WHEN dscociopro.Scocipro IN ("maitrise", "execution") THEN "personnelle technique" WHEN dscociopro.Scocipro NOT IN ("maitrise", "execution") THEN "personnelle administratifs" END AS gestion_ressource'))
-    ->groupBy('gestion_ressource')
+    $NBEmployes = DB::table('femploye')
+    ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'))
+    ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps');
+
+    $req04 = $NBEmployes
     ->get();
 
+    if (!empty($year) && !empty($filiale)) {
+        $req01 = $res01
+        ->where('dtemps.annee', $year)
+        ->where('femploye.ID_Ent', $filiale)
+        ->groupBy('gestion_ressource')
+        ->get();
+
+        $req02 = $res02
+        ->where('dtemps.annee', $year)
+        ->where('femploye.ID_Ent', $filiale)
+        ->groupBy('gestion_ressource')
+        ->get();
+
+        $req03 = $res03
+        ->where('dtemps.annee', $year)
+        ->where('femploye.ID_Ent', $filiale)
+        ->groupBy('gestion_ressource')
+        ->get();
+
+        $req04 = $NBEmployes
+        ->where('dtemps.annee', ">=", $year)
+        ->where('femploye.ID_Ent', $filiale)
+        ->get();
+
+    } else {
+        if (!empty($year)) {
+            $req01 = $res01
+            ->where('dtemps.annee', $year)
+            ->groupBy('gestion_ressource')
+            ->get();
+
+            $req02 = $res02
+            ->where('dtemps.annee', $year)
+            ->groupBy('gestion_ressource')
+            ->get();
+
+            $req03 = $res03
+            ->where('dtemps.annee', $year)
+            ->groupBy('gestion_ressource')
+            ->get();   
+            
+            $req04 = $NBEmployes
+            ->where('dtemps.annee', ">=", $year)
+            ->get();
+        } 
+        if (!empty($filiale)) {
+            $req01 = $res01
+            ->where('femploye.ID_Ent', $filiale)
+            ->groupBy('gestion_ressource')
+            ->get();
+
+            $req02 = $res02
+            ->where('femploye.ID_Ent', $filiale)
+            ->groupBy('gestion_ressource')
+            ->get();
+
+            $req03 = $res03
+            ->where('femploye.ID_Ent', $filiale)
+            ->groupBy('gestion_ressource')
+            ->get(); 
+            
+            $req04 = $NBEmployes
+            ->where('femploye.ID_Ent', $filiale)
+            ->get();
+        }
+    }
 
     $result1 = $req01->map(function ($req) {
         $EBE = $req->gestion_ressource;
@@ -986,7 +1073,8 @@ Route::get('dash_rhs', function () {
     $result = $result1->concat($result3);
 
 
-    return response(["ebe1" => $result, "ebe2" => $result2]);
+
+    return response(["ebe1" => $result, "ebe2" => $result2, "total" => $req04]);
 });
 
 
@@ -1339,7 +1427,7 @@ Route::get("UpdateFemploye", function () {
 
 Route::get('finance_dashboard', function () {
 
-    $year = null;
+    $year = 2020;
     $filiale = "";
 
     $test = DB::table('ffinance')
@@ -1360,11 +1448,13 @@ Route::get('finance_dashboard', function () {
     );
 
     $resultats = $test
+    // ->where('dtemps.annee', 2016)
     ->groupBy('Agregat_calculer')
     ->get();
 
     $NBEmployes = DB::table('femploye')
-    ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'));
+    ->select(DB::raw('SUM(Nombre_Eff) as nb_employes'))
+    ->join('dtemps', 'femploye.ID_Date_Recrutement', '=', 'dtemps.ID_Temps');
 
     $req04 = $NBEmployes
     ->get();
@@ -1377,7 +1467,7 @@ Route::get('finance_dashboard', function () {
         ->get();
 
         $req04 = $NBEmployes
-        ->where('dtemps.annee', $year)
+        ->where('dtemps.annee', '<=', $year)
         ->where('femploye.ID_Ent', $filiale)
         ->get();
     } else {
@@ -1388,7 +1478,7 @@ Route::get('finance_dashboard', function () {
             ->get();  
             
             $req04 = $NBEmployes
-            ->where('dtemps.annee', $year)
+            ->where('dtemps.annee', '<=', $year)
             ->get();
         } 
         if (!empty($filiale)) {
@@ -1402,6 +1492,7 @@ Route::get('finance_dashboard', function () {
             ->get();
         }
     }
+
 
 
     $query = $resultats->map(function ($resultat) {
@@ -1810,7 +1901,7 @@ Route::get('finance_dashboard', function () {
 
     return (['tab1' => $agregat_finance,'tab2' => $kpi_finance]);
 
-
+    // return $req04;
 
 });
 

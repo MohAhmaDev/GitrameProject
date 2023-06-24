@@ -37,7 +37,17 @@ const Formations = () => {
         getFormations()
       })
     }
-    
+    const edit = role !== "editor" ? null : {
+      // const edit =  {
+      field: "edit",
+      headerName: "Edit",
+      flex: 0.5,
+      renderCell: (params) => (
+        <IconButton onClick={() => handleEditRow(params.row)}>
+          <EditOutlinedIcon />
+        </IconButton>
+      ),
+    }   
     const columns = [
       { field: "id", headerName: "ID", flex: 0.5 },
       { field: "employe", headerName: "Name", flex: 0.5},  
@@ -45,17 +55,11 @@ const Formations = () => {
       { field: "intitule_formation", headerName: "intitule_formation", flex: 0.5},
       { field: "lieu_formation", headerName: "Lieux de Formationp", flex: 0.5},
       { field: "montant", headerName: "montant", flex: 0.5},
-      {
-        field: "edit",
-        headerName: "Edit",
-        flex: 0.5,
-        renderCell: (params) => (
-          <IconButton onClick={() => handleEditRow(params.row)}>
-            <EditOutlinedIcon />
-          </IconButton>
-        ),
-      },
     ]
+
+    if (edit !== null) {
+      columns.push(edit);
+    }
   
   
     useEffect(() => {

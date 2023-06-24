@@ -59,7 +59,7 @@ const Creances = () => {
         { field: "num_fact", headerName: "Numero Facture", flex: 1},
         { field: "num_situation", headerName: "Numéro situation", flex: 1},
         { field: "date_creance", headerName: "Date", flex: 1},
-        { field: "anteriorite_creance", headerName: "Date", flex: 1},
+        { field: "anteriorite_creance", headerName: "Date Anteriorete", flex: 1},
         { field: "montant", headerName: "montant", flex: 0.5},
         { field: "creditor", headerName: "créditeur", flex: 0.5},
         { field: "debtor", headerName: "débiteur", flex: 1},

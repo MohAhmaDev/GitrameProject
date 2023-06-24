@@ -24,6 +24,8 @@ export default function DefaultLayout() {
         admission,
         fetchUser,
         role, 
+        setRole,
+        setFiliale,
         toggleMenu,
         toggleMenue, 
         setToggleDashMenu,
@@ -42,6 +44,8 @@ export default function DefaultLayout() {
         axiosClient.post('/logout')
         .then(() => {
             setUser({});
+            setRole("");
+            setFiliale(null);
             setToken(null);
         })
     }
@@ -57,7 +61,7 @@ export default function DefaultLayout() {
 
     return (
         <div id='defaultLayout'>
-            <aside>
+            {role && <aside>
                 {(role !== "admin" && admission) && <>
                     <span style={{ display: "flex", justifyContent: "space-between" }}
                     onClick={() => toggleMenu(".toggle-dash", false)}>
@@ -68,7 +72,7 @@ export default function DefaultLayout() {
                         </div>  
                         {toggleDashMenu ? <ExpandMoreIcon /> : <ExpandLessIcon/>}
                     </span>
-                    <Link to='/dashboard' className='toggle-dash'> Dashboard Globale </Link>
+                    {role === "global" && <Link to='/dashboard' className='toggle-dash'> Dashboard Globale </Link>}
                     <Link to='/dashboard/RHS' className='toggle-dash'> Dashboard RHS </Link>
                     <Link to='/dashboard/Finance' className='toggle-dash'> Dashboard Finance </Link>
                     <Link to='/dashboard/Dette_Creances' className='toggle-dash'> Dettes_Creances </Link>
@@ -95,12 +99,14 @@ export default function DefaultLayout() {
 
                 </>}
                 {role === "admin" && <Link to='/users' className='active'> Users </Link>}
-            </aside>
+            </aside>}
             <div className='content'> 
                 <header>
                     <div>
-                        Header
+                        <img src="Gitrama.png" height={"50"} width={"50"} alt="" />
                     </div>
+                    <h2 style={{ marginLeft: "-200px", fontWeight: "400" }}> GROUPE D'INFRASTRUCTURES DE TRAVAUX MARITIMES </h2> 
+
                     <div>
                         {user.name}
                         { role === "admin" && <AdminPanelSettingsOutlinedIcon /> }

@@ -57,12 +57,16 @@ export default function Login() {
     <div className='login-signup-form animated fadeInDown'>
       <div className='form'>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <h1 className='title'> Login In to your count </h1>
+        <h1 className='title'> GROUPE D'INFRASTRUCTURES DE TRAVAUX MARITIMES </h1>
+
+          <img src="Gitrama.png" style={{ marginLeft: "90px" }} width={"100"} height={"100"} alt="" />
           {errors.server &&
             <div className="alert">
               <p>{errors.server.message}</p>
             </div>
           }
+          <h2 style={{ textAlign: "center", fontWeight: "500", marginBottom: "25px",
+           marginTop: "30px" }}> se connecter </h2>
           <input type="email" placeholder='Email' {...register('email')} />
           {errors.email && <div className='errors'> error : {errors.email?.message} </div>}
           <input type="password" placeholder='password' {...register('password')}/>

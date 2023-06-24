@@ -52,13 +52,15 @@ export default function Employe() {
   const columns = [
     { field: "id", headerName: "ID", flex: 0.5 },
     { field: "numero_securite_social", headerName: "NSS", flex: 0.5 },
-    { field: "filiale_id", headerName: "Filiale", type: "number", flex: 0.5},  
-    { field: "nom", headerName: "Name", flex: 1, cellClassName: "name-column--cell"},
-    { field: "fonction", headerName: "Fonction", flex: 1},
-    { field: "date_recrutement", headerName: "Date Recrutement", flex: 1},
-    { field: "date_naissance", headerName: "Date Naissance", flex: 1},
+    { field: "filiale_id", headerName: "Filiale", type: "number", flex: 0.25},  
+    { field: "nom", headerName: "Name", flex: 0.5, cellClassName: "name-column--cell"},
+    { field: "fonction", headerName: "Fonction", flex: 0.5},
+    { field: "date_recrutement", headerName: "Date Recrutement", flex: 0.5},
+    { field: "date_naissance", headerName: "Date Naissance", flex: 0.5},
     { field: "contract", headerName: "contract", flex: 0.5},
-    { field: "handicape", headerName: "handicape", flex: 0.5},
+    { field: "handicape", headerName: "handicape", flex: 0.5, valueGetter: (params) => {
+      return(params.value ? "handicape" : "non handicape")
+     }},
     { field: "sexe", headerName: "sexe", flex: 1},
   ]
 
