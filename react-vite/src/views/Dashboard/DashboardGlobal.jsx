@@ -105,8 +105,11 @@ export default function DashboardGlobal() {
         {((key.length !== 0) && (Object.keys(post).length !== 0) && (Object.keys(dash03).length !== 0)
         && (makeLine.length !== 0)) ?
         <div>
-          <h1> Dashboard Globale </h1>
-          <div className="card animated fadeInDown" style={{ marginTop: "50px" }}>
+          <h1> Dashboard </h1>
+          <div className="card animated fadeInDown" style={{ marginTop: "25px" }}>
+            <h2 style={{
+                marginBottom: "20px"
+            }}> Graphes et Statistique sur les différents module du Groupe </h2>
             <Box display="grid" gridTemplateColumns="repeat(12, 1fr)" gridAutoRows="170px" gap="20px"> 
               <Box gridColumn="span 4" gridRow="span 2" backgroundColor={"#007bff"} overflow="auto" borderRadius={`5px`}>
                   <Box 
@@ -288,7 +291,7 @@ export default function DashboardGlobal() {
                           fontWeight="600"
                           sx={{ padding: "10px 10px 0 30px" }}
                       >
-                          CDI-CDD
+                        Nombre  CDI-CDD
                       </Typography>
                       <Box height="300px" mt="-10px">
                           <NivoChar data={dash03}/>

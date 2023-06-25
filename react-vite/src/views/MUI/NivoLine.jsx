@@ -23,7 +23,7 @@ const NivoLine = ({data}) => {
                 tickSize: 5,
                 tickPadding: 5,
                 tickRotation: 0,
-                legend: 'transportation',
+                legend: 'evolution des taux de Realisation par type agregat par annee',
                 legendOffset: 36,
                 legendPosition: 'middle'
             }}
@@ -31,7 +31,7 @@ const NivoLine = ({data}) => {
                 tickSize: 5,
                 tickPadding: 5,
                 tickRotation: 0,
-                legend: 'count',
+                legend: 'taux Realisation',
                 legendOffset: -40,
                 legendPosition: 'middle'
             }}

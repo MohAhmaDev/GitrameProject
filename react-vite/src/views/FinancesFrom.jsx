@@ -187,6 +187,7 @@ const FinancesFrom = () => {
           })
           reset({...data.data})
           setLoading(false)
+          handleChange(data.data.type_activite);
         })
         .catch((err) => {
           console.log(err)
@@ -226,6 +227,7 @@ const FinancesFrom = () => {
                                     <MenuItem value="consomation"> consomation </MenuItem>
                                     <MenuItem value="vente"> vente </MenuItem>
                                     <MenuItem value="autre"> autre </MenuItem>
+                                    <MenuItem value="production"> production </MenuItem>
 
                                 </Select>
                                 {errors.type_activite && <span style={{

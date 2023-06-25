@@ -183,12 +183,12 @@ const TableCreanceDettes = ({hide = false}) => {
         return rows;
     };
 
-    useEffect(() => {
+    useMemo(() => {
         fetchUser()
     }, [])
 
     useEffect(() => {
-        if (Form.date !== "" || Form.filiale !== null) {
+        if (Form.date === "" || Form.filiale === null) {
             setData1({})
             setData2({})
             setData3({})            

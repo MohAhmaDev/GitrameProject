@@ -42,7 +42,7 @@ const Finances = () => {
     const edit = role !== "editor" ? null : {
       field: "edit",
       headerName: "Edit",
-      flex: 0.5,
+      flex: 0.25,
       renderCell: (params) => (
         <IconButton onClick={() => handleEditRow(params.row)}>
           <EditOutlinedIcon />
@@ -50,11 +50,11 @@ const Finances = () => {
       ),
     }
     const columns = [
-        { field: "id", headerName: "ID", flex: 0.5 },
+        { field: "id", headerName: "ID", flex: 0.25 },
         { field: "type_activite", headerName: "Type d'activité", flex: 0.5 },
-        { field: "activite", headerName: "Activité", flex: 0.5},
+        { field: "activite", headerName: "Activité", flex: 1},
         { field: "realisation", headerName: "Realisation", flex: 0.5},
-        { field: "filiale_id", headerName: "Filiale", flex: 0.5},
+        { field: "filiale_id", headerName: "Filiale", flex: 0.25},
         { field: "date_activite", headerName: "Date Activité", flex: 0.5},
         { field: "privision", headerName: "privision", flex: 0.5},
         { field: "compte_scf", headerName: "Compte Scf", flex: 0.5},

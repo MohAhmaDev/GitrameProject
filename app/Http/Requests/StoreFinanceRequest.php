@@ -27,7 +27,7 @@ class StoreFinanceRequest extends FormRequest
             'type_activite' => [
                 'required',
                 'string',
-                Rule::in(['vente', 'consomation', 'autre'])
+                Rule::in(['vente', 'consomation', 'autre', 'production'])
             ],
             'date_activite' => ['required','date','before:2023-04-22'],
             'compte_scf' => 'required|string|max:55',

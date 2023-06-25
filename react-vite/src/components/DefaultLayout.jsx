@@ -72,10 +72,10 @@ export default function DefaultLayout() {
                         </div>  
                         {toggleDashMenu ? <ExpandMoreIcon /> : <ExpandLessIcon/>}
                     </span>
-                    {role === "global" && <Link to='/dashboard' className='toggle-dash'> Dashboard Globale </Link>}
+                    {role === "global" && <Link to='/dashboard' className='toggle-dash'> Dashboard Groupe </Link>}
                     <Link to='/dashboard/RHS' className='toggle-dash'> Dashboard RHS </Link>
-                    <Link to='/dashboard/Finance' className='toggle-dash'> Dashboard Finance </Link>
                     <Link to='/dashboard/Dette_Creances' className='toggle-dash'> Dettes_Creances </Link>
+                    <Link to='/dashboard/Finance' className='toggle-dash'> Dashboard Finance </Link>
                     <span onClick={() => toggleMenu(".toggle-menue", true)} 
                     style={{ display: "flex", justifyContent: "space-between" }}>
                         <div> 

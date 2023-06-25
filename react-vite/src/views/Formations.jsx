@@ -81,7 +81,7 @@ const Formations = () => {
             {check && <button className='btn-delete' onClick={ev => onDelete()}> delete </button>}
             {check && <Link style={{ marginLeft: "10px" }} to={`/formations/${formationID}`} className='btn-edit'> Edit </Link>}
   
-            {(role && role !== "basic" && !!formations) && 
+            {(role === "editor" && !!formations) && 
             <Link style={{ marginLeft: "10px" }} to="/formations/new" className='btn-add'> Add new </Link>}
           </div>
         </div>
