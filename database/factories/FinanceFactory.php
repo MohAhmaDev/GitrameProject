@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Finance;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Finance>
@@ -17,11 +18,20 @@ class FinanceFactory extends Factory
      */
     public function definition(): array
     {
+        $activite = DB::table('dagregats')
+            ->select('agregats')
+            ->distinct()
+            ->get()->random()->agregats;
+        $typeAgregats = DB::table('dagregats')
+            ->select('Type_Agregats')
+            ->distinct()
+            ->where('agregats', $activite)
+            ->inRandomOrder()
+            ->first()
+        ->Type_Agregats;
         return [
-            'activite' => fake()->randomElement(['Vente de Marchandises', 'Vente de travaux', 'Ventes de produit',
-            'Production stockée ou déstockée', 'Production immobilisée', "Subventions d'exploitation", 'Services extérieurs',
-            'Autres services extérieurs', 'Matières premières']),
-            'type_activite' => fake()->randomElement(['vente', 'consomation', 'autre', 'production']),
+            'activite' => $activite,
+            'type_activite' => $typeAgregats,
             'date_activite' => fake()->dateTimeBetween('-7 years', 'now'),
             'compte_scf' => fake()->numerify("###"),
             'privision' => rand(65000,89000),

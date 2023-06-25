@@ -1,12 +1,16 @@
 import React, { useRef } from 'react';
 import { Helmet } from 'react-helmet';
-import TemplateTest from '../TableRHS';
+import TemplateTest from './TableRHS';
 import { useReactToPrint } from "react-to-print";
 import { Box, Button } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import TableFinance from './TableFinance';
+import TableCreanceDettes from './TableCreanceDettes';
 
 
 const GitramReports = () => {
 
+    const {table} = useParams();
     const conponentPDF = useRef();
     const date = new Date().toLocaleDateString("de-DE");
 
@@ -15,7 +19,7 @@ const GitramReports = () => {
     const generatePDF= useReactToPrint({
         content: ()=>conponentPDF.current,
         documentTitle:"Userdata",
-        onAfterPrint:()=>alert("Data saved in PDF")
+        onAfterPrint:()=>console.log("Data saved in PDF")
     });
 
     return (
@@ -27,7 +31,7 @@ const GitramReports = () => {
                         <table>
                             <tr>
                                 <td class="title">
-                                    <img src="Gitrama.png" style={{widows: "100%", maxWidth: "150px"}} />
+                                    <img src="../../Gitrama.png" style={{widows: "100%", maxWidth: "150px"}} />
                                 </td>
 
                                 <td>
@@ -59,7 +63,9 @@ const GitramReports = () => {
                     </td>
                 </tr>
             </table>
-            {<TemplateTest hide={true}/>}
+            {table === "rhs" && <TemplateTest hide={true}/>}
+            {table === "finances" && <TableFinance hide={true}/>}
+            {table === "dette_creances" && <TableCreanceDettes hide={true}/>}
             </div>
             <Box sx={{ marginTop: "25px", marginLeft: "125px" }}>
                 <Button style={{ marginLeft: "10px" }} onClick={generatePDF} color="error"> PDF REPORT </Button> 

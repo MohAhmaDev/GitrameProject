@@ -21,13 +21,11 @@ import PrivateRoute from './utils/PrivateRoute';
 import Creances from './views/Creances';
 import CreancesForm from './views/CreancesForm';
 import EntreprisesForm from './views/EntreprisesForm'
-import Stagiares from './views/Stagiares';
-import StagiaresForm from './views/StagiaresForm'
 import Formation from './views/Formations';
 import FormationForm from './views/FormationForm'
 import UserTest from './views/UserTest';
 import GitramReports from './views/MUI/GitramReports';
-import TableRHS from './views/TableRHS';
+import TableRHS from './views/MUI/TableRHS';
 
 
 const router = createBrowserRouter([
@@ -138,7 +136,7 @@ const router = createBrowserRouter([
                 element: <Dashboard03 />
             },
             {
-                path: '/report',
+                path: '/report/:table',
                 element: <GitramReports />
             },
         ]

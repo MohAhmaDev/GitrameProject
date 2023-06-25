@@ -105,7 +105,7 @@ export default function DefaultLayout() {
                     <div>
                         <img src="Gitrama.png" height={"50"} width={"50"} alt="" />
                     </div>
-                    <h2 style={{ marginLeft: "-200px", fontWeight: "400" }}> GROUPE D'INFRASTRUCTURES DE TRAVAUX MARITIMES </h2> 
+                    <h2 style={{ marginLeft: "-150px", fontWeight: "400" }}> GROUPE D'INFRASTRUCTURES DE TRAVAUX MARITIMES </h2> 
 
                     <div>
                         {user.name}

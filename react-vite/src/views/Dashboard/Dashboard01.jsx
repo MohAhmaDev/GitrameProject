@@ -29,7 +29,7 @@ import NivoChar from '../MUI/NivoChar';
 import { useDisplayContext } from '../../contexts/DisplayContext';
 import { useReactToPrint } from "react-to-print";
 import SailingIcon from '@mui/icons-material/Sailing';
-import TemplateTest from '../TableRHS';
+import TemplateTest from '../MUI/TableRHS';
 import { useStateContext } from '../../contexts/ContextProvider';
 import GitramReports from '../MUI/GitramReports';
 import { useNavigate } from 'react-router-dom';
@@ -385,7 +385,7 @@ const Dashboard01 = () => {
                     Renaitialiser
                 </Button>
                 <Button variant='contained' style={{ marginLeft: "10px" }} color="error"
-                onClick={() => navigate('/report')}> PDF REPORT </Button> 
+                onClick={() => navigate('/report/rhs')}> PDF REPORT </Button> 
 
             </Box>
             </Box>

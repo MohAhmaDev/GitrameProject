@@ -107,7 +107,7 @@ const FormationForm = () => {
         axiosClient.post('/formations', Add_formation)
         .then(() => {
           setNotification("le formation à bien été saiséer")
-          navigate('/fromations')
+          navigate('/formations')
         })
         .catch((err) => {
           console.log(err)

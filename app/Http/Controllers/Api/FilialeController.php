@@ -23,7 +23,7 @@ class FilialeController extends Controller
         } else {
             $id = $branch->id;
             if (!is_null($id)) {
-                $filiales = Filiale::query()->where('id', '!=', 1)->get();
+                $filiales = Filiale::query()->where('id', '!=', $branch->id)->get();
             } else {
                 return response(['filiale' => []]);
             }

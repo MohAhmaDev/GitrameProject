@@ -73,7 +73,7 @@ export default function Login() {
           {errors.password && <div className='errors'> error : {errors.password?.message} </div>}
           <button className='btn btn-block' disabled={isSubmitting || !isValid}> Login </button>
           <p className='message'> 
-            Not Registred ? 
+           Login page
             {/* <Link to="/signup"> Create an accounts </Link> */}
           </p>
         </form>

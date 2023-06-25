@@ -239,13 +239,13 @@ export default function DashboardGlobal() {
                               variant="h5" 
                               fontWeight="600" 
                               color={colors.grey[900]}>
-                                  Revenue Generated
+                                  Revenue Generer
                               </Typography>
                               <Typography 
                               variant="h3" 
                               fontWeight="bold" 
                               color={"#007bff"}>
-                                  ${ dataCa && dataCa }
+                                  { dataCa && dataCa } DA
                               </Typography>
                           </Box>
                           <Box>

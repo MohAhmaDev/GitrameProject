@@ -58,16 +58,11 @@ export default function DettesForm() {
 
 
 
-  // const openForm = () => {
-  //   if (role === "admin") {
-  //     setShow(true)
-  //   }
-  // }
+
   useEffect(() => {
     getFiliales()
     getEntreprises()
     fetchUser();
-    // openForm()
   }, [role])
 
 
@@ -118,32 +113,7 @@ export default function DettesForm() {
     IncrementDebtor(e);
   }
 
-  // const onSubmit = (data) => {
-  //   const dette = {
-  //     intitule_projet: data.intitule_projet,
-  //     num_fact: data.num_fact,
-  //     num_situation: data.num_situation,
-  //     date_dettes: dayjs(data.date_dettes).format("YYYY-MM-DD"),
-  //     observations: data.observations,
-  //     creditor_type: selected?.creditor ? "filiale" : data.creditor_type,
-  //     creditor_id: selected?.creditor ? selected?.id : data.creditor_id,
-  //     debtor_type: selected?.debtor ? "filiale" : data.debtor_type,
-  //     debtor_id: selected?.debtor ? selected?.id : data.debtor_id,
-  //     montant: data.montant,
-  //   }
-  //   axiosClient.post('/dettes', dette)
-  //   .then(() => {
-  //     setNotification("la dette à bien été saisite")
-  //     navigate('/dettes')
-  //   })
-  //   .catch((err) => {
-  //     console.log(err)
-  //     const response = err.response;
-  //     setError('server', {
-  //       message: response?.data.errors
-  //     })       
-  //   })
-  // }
+
 
   const onSubmit = (data) => {
     // console.log(data)
@@ -260,16 +230,6 @@ export default function DettesForm() {
   )
   
 
-  // const ChoseRole = (e) => {
-  //   if (e === "creditor") {
-  //     setSelected({"creditor": true, "id": filiale?.id})
-  //   } 
-  //   if (e === "debtor") {
-  //     setSelected({"debtor": true, "id": filiale?.id})
-  //   }
-  //   setShow(true)
-  // }
-
   const getDette = () => {
     setLoading(true)
     axiosClient.get(`dettes/${id}`)
@@ -310,20 +270,7 @@ if (id) {
 }
 
   return ( <>
-    {/* {(filiale?.id && !show && !loading) && <div className="card animated fadeInDown">
-      <Box m="50px" display="grid" gridTemplateColumns="repeat(6, minmax(0, 1fr))" gap="20px">
-        <label style={{ gridColumn: "span 2" }}> {id ? "Modifier" : "Choisir" } le role  </label>    
-        <FormControl sx={{ gridColumn: "span 2" }}>
-          <InputLabel> role </InputLabel>
-          <Select label="créditeur" value={dette.role} onChange={e => {ChoseRole(e.target?.value);
-            setDette({...dette, role: e.target.value})
-          }}>
-            <MenuItem value="creditor"> créditeur </MenuItem>
-            <MenuItem value="debtor"> débiteur </MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-    </div>} */}
+
     {(!loading) && 
     <div className="card animated fadeInDown">
       <Box m="20px">
