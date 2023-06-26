@@ -202,7 +202,6 @@ const TableFinance = ({hide = false}) => {
                 <h2 style={{ marginBottom: '10px', textAlign: 'center' }}>
                 les Indicateurs de Performances Finance
                 </h2>
-                <h2></h2>
                 <table>
                 <thead>
                     <tr>

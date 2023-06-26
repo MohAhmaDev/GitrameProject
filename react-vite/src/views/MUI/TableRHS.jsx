@@ -2,10 +2,20 @@ import React, { useEffect, useState } from 'react';
 import axiosClient from '../../axios-client';
 import { Box, TextField, Button, CircularProgress,
   FormControl, Select, InputLabel, MenuItem} from '@mui/material';
+import { get } from 'react-hook-form';
 
 
 
 const TableRHS = ({hide = false}) => {
+
+    const [fformation, setFformation] = useState({
+        type_formation: {},
+        Montant: null,
+        NB_personne: null,
+    });
+    const [effectifs, setEffectifs] = useState({});
+    const [sociopro, setSociopro] = useState({});
+    const [total, setTotal] = useState({});
 
 
     const [trancheAge, setTrancheAge] = useState({});
@@ -26,8 +36,33 @@ const TableRHS = ({hide = false}) => {
         })
     }
 
+    const getData = (req) => {
+      axiosClient.post('rhs_dashboard', req).then(({data}) => {
+          setSociopro(data.ebe2);
+          setEffectifs(data.ebe1);
+          setTotal(data.total)
+      }).catch((err) => {
+          console.log(err)
+      })
+  }
+
+  const getFformation = (req) => {
+    axiosClient.post('/dash_formation', req).then(({data}) => {
+        setFformation({
+            type_formation: data.type_formation,
+            Montant: data.Montant,
+            NB_personne: data.NB_personne
+        })
+    }).catch((err) => {
+        console.log(err)
+    })        
+}
+
+
     useEffect(() => {
         getTrancheAge(filtreStatue)
+        getData()
+        getFformation()
     }, [filtreStatue])
 
 
@@ -193,6 +228,83 @@ const TableRHS = ({hide = false}) => {
                       </tbody>
               </table>
             </div>: <CircularProgress disableShrink />}
+            {hide && <div>
+            {effectifs && Object.keys(effectifs).length !== 0 ? (
+            <div style={{ marginTop: '50px'}}>
+                <h2 style={{ marginBottom: '10px', textAlign: 'center' }}>
+                    Effectifs
+                </h2>
+                <table>
+                <thead>
+                    <tr>
+                    {Object.keys(effectifs).length !== 0 &&
+                        effectifs.map((data) => <th value={data?.key}> {data?.key} </th>)}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    {Object.keys(effectifs).length !== 0 &&
+                        effectifs.map((data) => <td value={data?.val}> {data?.val} </td>)}
+                    </tr>
+                </tbody>
+                </table>
+            </div>
+            ) : (
+            <CircularProgress sx={{ marginTop: '25px' }} disableShrink />
+            )}
+            {sociopro && Object.keys(sociopro).length !== 0 ? (
+                <div style={{ marginTop: '50px'}}>
+                    <h2 style={{ marginBottom: '10px', textAlign: 'center' }}>
+                        Catégorie Socioprofetionnelles
+                    </h2>
+                    <table>
+                    <thead>
+                        <tr>
+                        {Object.keys(sociopro).length !== 0 &&
+                            sociopro.map((data) => <th value={data?.key}> {data?.key} </th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        {Object.keys(sociopro).length !== 0 &&
+                            sociopro.map((data) => <td value={data?.val}> {data?.val} </td>)}
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+                ) : (
+                <CircularProgress sx={{ marginTop: '25px' }} disableShrink />
+            )}
+            {fformation.type_formation && Object.keys(fformation.type_formation).length !== 0 ? (
+                <div style={{ marginTop: '50px'}}>
+                    <h2 style={{ marginBottom: '10px', textAlign: 'center' }}>
+                        Catégorie Socioprofetionnelles
+                    </h2>
+                    <table>
+                    <thead>
+                        <tr>
+                        {Object.keys(fformation.type_formation).length !== 0 &&
+                            fformation.type_formation.map((data) => <th value={data?.Domaine}> 
+                            {data?.Domaine} </th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        {Object.keys(fformation.type_formation).length !== 0 &&
+                            fformation.type_formation.map((data) => <td value={data?.nb_effectif}>
+                                {data?.nb_effectif} </td>)}
+                        </tr>
+                        <tr>
+                        {Object.keys(fformation.type_formation).length !== 0 &&
+                            fformation.type_formation.map((data) => <td value={data?.montant}> {data?.montant} </td>)}
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+                ) : (
+                <CircularProgress sx={{ marginTop: '25px' }} disableShrink />
+            )}
+            </div>}
             
         </>
     );

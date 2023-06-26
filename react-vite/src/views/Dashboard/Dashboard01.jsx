@@ -162,6 +162,7 @@ const Dashboard01 = () => {
         onAfterPrint:()=>alert("Data saved in PDF")
     });
 
+
     return (
         <>
         <h1> Dashboard RHS </h1>
@@ -172,15 +173,11 @@ const Dashboard01 = () => {
         <Box 
             display="grid"
             gridTemplateColumns="repeat(12, 1fr)"
-
-            gap="20px"
-            
-        >
+            gap="20px">
             <Box
                 padding={"10px"}
                 gridColumn="span 12" 
-                justifyContent={"space between"}
-            >
+                justifyContent={"space between"}>
                 <form>
                         <label style={{ gridColumn: "span 1" }}> </label>
                         {(!filiale?.id) && <Controller
@@ -229,7 +226,6 @@ const Dashboard01 = () => {
             </Box>
 
             {/* ROW 1 */}
-
             {(check2 && Object.keys(effectifs).length !== 0) && effectifs.map(dash => (
             <Box 
             padding={"10px"}
@@ -329,6 +325,13 @@ const Dashboard01 = () => {
                         },
                     }}
                     />} label="Formation " />
+                     <Button
+                     sx={{ width: "100px", marginLeft: "900px" }}
+                        color="secondary"
+                        size="medium"
+                        variant="outlined"
+                    > Imprimer </Button>
+
                 </FormGroup>
             </Box>
 
@@ -390,13 +393,18 @@ const Dashboard01 = () => {
             </Box>
             </Box>
             </>}
-            
         </Box> 
         </div> :<CircularProgress disableShrink sx={{ marginTop: "50px" }}/>}
     </>
     );
 };
 
+const viewerStyle = {
+    display: "block",
+    margin: "0 auto",
+    width: "70vw",
+    height: "90vh"
+};
+
 export default Dashboard01;
 
-// #ef6c00                            

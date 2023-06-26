@@ -25,7 +25,7 @@ const GitramReports = () => {
     return (
         <>
             <div class="invoice-box" ref={conponentPDF}>
-            <table cellpadding="0" cellspacing="0">
+            <table className='dtable' cellpadding="0" cellspacing="0">
                 <tr class="top">
                     <td colspan="2">
                         <table>

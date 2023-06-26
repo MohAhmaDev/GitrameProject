@@ -543,60 +543,62 @@ right:0;
   text-align: left;
 }
 
-.invoice-box table td {
+.invoice-box table.dtable td {
   padding: 5px;
   vertical-align: top;
 }
 
-.invoice-box table tr td:nth-child(2) {
+.invoice-box table.dtable tr td:nth-child(2) {
   text-align: right;
 }
 
-.invoice-box table tr.top table td {
+
+
+.invoice-box table.dtable tr.top table.dtable td {
   padding-bottom: 20px;
 }
 
-.invoice-box table tr.top table td.title {
+.invoice-box table.dtable tr.top table.dtable td.title {
   font-size: 45px;
   line-height: 45px;
   color: #333;
 }
 
-.invoice-box table tr.information table td {
+.invoice-box table.dtable tr.information table.dtable td {
   padding-bottom: 40px;
 }
 
-.invoice-box table tr.heading td {
+.invoice-box table.dtable tr.heading td {
   background: #eee;
   border-bottom: 1px solid #ddd;
   font-weight: bold;
 }
 
-.invoice-box table tr.details td {
+.invoice-box table.dtable tr.details td {
   padding-bottom: 20px;
 }
 
-.invoice-box table tr.item td {
+.invoice-box table.dtable tr.item td {
   border-bottom: 1px solid #eee;
 }
 
-.invoice-box table tr.item.last td {
+.invoice-box table.dtable tr.item.last td {
   border-bottom: none;
 }
 
-.invoice-box table tr.total td:nth-child(2) {
+.invoice-box table.dtable tr.total td:nth-child(2) {
   border-top: 2px solid #eee;
   font-weight: bold;
 }
 
 @media only screen and (max-width: 600px) {
-  .invoice-box table tr.top table td {
+  .invoice-box table.dtable tr.top table.dtable td {
     width: 100%;
     display: block;
     text-align: center;
   }
 
-  .invoice-box table tr.information table td {
+  .invoice-box table.dtable tr.information table.dtable td {
     width: 100%;
     display: block;
     text-align: center;
@@ -609,10 +611,10 @@ right:0;
   font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
 }
 
-.invoice-box.rtl table {
+.invoice-box.rtl table.dtable {
   text-align: right;
 }
 
-.invoice-box.rtl table tr td:nth-child(2) {
+.invoice-box.rtl table.dtable tr td:nth-child(2) {
   text-align: left;
 }
