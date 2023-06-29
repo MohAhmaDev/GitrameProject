@@ -1205,8 +1205,7 @@ Route::get("UpdateFemploye", function () {
 
     $timestemp = DB::table('controller_stamp')->max('last_timp_stamp');
     $lastTimestamp = DB::table('employes')->max('updated_at');
-
-   
+    
     $results = DB::table('employes')
         ->join('dsexe', 'dsexe.Sexe', '=', 'employes.sexe')
         ->join('dhandicap', 'dhandicap.Handicap', '=', 'employes.handicape')
@@ -1226,66 +1225,108 @@ Route::get("UpdateFemploye", function () {
                 });
         })
         ->select(
-                'dtemps_cra.ID_Temps as ID_Temps',
-                'dtemps_rec.ID_Temps as ID_Date_Recrutement',
-                DB::raw('COALESCE(dtemps_ret.ID_Temps, 2413) as ID_Date_Retraite'),
-                'dsexe.ID_Sexe as ID_Sexe',
-                'dhandicap.ID_Handicap as ID_Handicap',
-                'dfonction.ID_Fonction as ID_Fonction',
-                'dentreprise.ID_Ent as ID_Ent',
-                'dtemps_travail.ID_Temps_Trav as ID_Temps_Trav',
-                'dcontrat.ID_Contrat as ID_Contrat',
-                'dscociopro.ID_scociopro AS ID_scociopro',
-                DB::raw('CASE
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) <= 20 THEN 1
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 21 AND 25 THEN 2 
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 21 AND 25 THEN 3
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 26 AND 30 THEN 4
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 31 AND 35 THEN 5
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 36 AND 40 THEN 6
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 41 AND 45 THEN 7
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 46 AND 50 THEN 8
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 51 AND 55 THEN 9
-                    WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 56 AND 60 THEN 10
-                    ELSE 11
-                END AS ID_Age',),
-                DB::raw('COUNT(employes.id) as Nombre_Eff')
-            )
-            ->where('employes.updated_at','>', $timestemp)
-            ->groupBy('ID_Temps', 'ID_Date_Recrutement', 'ID_Date_Retraite', 'ID_Fonction', 'ID_Sexe', 'ID_Handicap', 'ID_Ent', 'ID_Temps_Trav', 'ID_Contrat', 'ID_Age')
-            ->get();
+            'dtemps_cra.ID_Temps as ID_Temps',
+            'dtemps_rec.ID_Temps as ID_Date_Recrutement',
+            DB::raw('COALESCE(dtemps_ret.ID_Temps, 2413) as ID_Date_Retraite'),
+            'dsexe.ID_Sexe as ID_Sexe',
+            'dhandicap.ID_Handicap as ID_Handicap',
+            'dfonction.ID_Fonction as ID_Fonction',
+            'dentreprise.ID_Ent as ID_Ent',
+            'dtemps_travail.ID_Temps_Trav as ID_Temps_Trav',
+            'dcontrat.ID_Contrat as ID_Contrat',
+            'dscociopro.ID_scociopro AS ID_scociopro',
+            DB::raw('CASE
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) <= 20 THEN 1
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 21 AND 25 THEN 2 
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 26 AND 30 THEN 3
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 31 AND 35 THEN 4
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 36 AND 40 THEN 5
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 41 AND 45 THEN 6
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 46 AND 50 THEN 7
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 51 AND 55 THEN 8
+                WHEN TIMESTAMPDIFF(YEAR, employes.date_naissance, CURDATE()) BETWEEN 56 AND 60 THEN 9
+                ELSE 10
+            END AS ID_Age'),
+            DB::raw('COUNT(employes.id) as Nombre_Eff')
+        )
+        ->where('employes.updated_at', '>', $timestemp)
+        ->groupBy('ID_Temps', 'ID_Date_Recrutement', 'ID_Date_Retraite', 'ID_Fonction', 'ID_Sexe', 'ID_Handicap', 'ID_Ent', 'ID_Temps_Trav', 'ID_Contrat', 'ID_Age')
+        ->get();
+    
+    $TransformRequest = $results->map(function ($result) {
+        $id0 = $result->ID_Temps;
+        $id1 = $result->ID_Date_Recrutement;
+        $id2 = $result->ID_Date_Retraite;
+        $id3 = $result->ID_Sexe;
+        $id4 = $result->ID_Handicap;
+        $id5 = $result->ID_Fonction;
+        $id6 = $result->ID_Ent;
+        $id7 = $result->ID_Temps_Trav;
+        $id8 = $result->ID_Contrat;
+        $id9 = $result->ID_Age;
+        $id10 = $result->ID_scociopro;
+        $Nombre_Eff = $result->Nombre_Eff;
+        return [
+            'ID_Temps' => $id0,
+            'ID_Date_Recrutement' => $id1,
+            'ID_Date_Retraite' => $id2,
+            'ID_Sexe' => $id3,
+            'ID_Handicap' => $id4,
+            'ID_Fonction' => $id5,
+            'ID_Ent' => $id6,
+            'ID_Temps_Trav' => $id7,
+            'ID_Contrat' => $id8,
+            'ID_Age' => $id9,
+            'ID_scociopro' => $id10,
+            'Nombre_Eff' => $Nombre_Eff
+        ];
+    });
+    
+    $values = $TransformRequest->toArray();
+    
+    $query = DB::transaction(function () use ($values) {
+        foreach ($values as $data) {
+            $existingRecord = DB::table('femploye')
+                ->where([
+                    'ID_Age' => $data['ID_Age'],
+                    'ID_Contrat' => $data['ID_Contrat'],
+                    'ID_Date_Recrutement' => $data['ID_Date_Recrutement'],
+                    'ID_Date_Retraite' => $data['ID_Date_Retraite'],
+                    'ID_Ent' => $data['ID_Ent'],
+                    'ID_Fonction' => $data['ID_Fonction'],
+                    'ID_Handicap' => $data['ID_Handicap'],
+                    'ID_Sexe' => $data['ID_Sexe'],
+                    'ID_Temps' => $data['ID_Temps'],
+                    'ID_Temps_Trav' => $data['ID_Temps_Trav'],
+                    'ID_scociopro' => $data['ID_scociopro'],
+                ])
+                ->first();
+    
+            if ($existingRecord) {
+                DB::table('femploye')
+                    ->where('ID_Age', $data['ID_Age'])
+                    ->where('ID_Contrat', $data['ID_Contrat'])
+                    ->where('ID_Date_Recrutement', $data['ID_Date_Recrutement'])
+                    ->where('ID_Date_Retraite', $data['ID_Date_Retraite'])
+                    ->where('ID_Ent', $data['ID_Ent'])
+                    ->where('ID_Fonction', $data['ID_Fonction'])
+                    ->where('ID_Handicap', $data['ID_Handicap'])
+                    ->where('ID_Sexe', $data['ID_Sexe'])
+                    ->where('ID_Temps', $data['ID_Temps'])
+                    ->where('ID_Temps_Trav', $data['ID_Temps_Trav'])
+                    ->where('ID_scociopro', $data['ID_scociopro'])
+                    ->increment('Nombre_Eff', 1);
+                return true;
 
-            $TransformRequest = $results->map(function ($result) {
-                $id0 = $result->ID_Temps;
-                $id1 = $result->ID_Date_Recrutement;
-                $id2 =  $result->ID_Date_Retraite;
-                $id3 = $result->ID_Sexe;
-                $id4 = $result->ID_Handicap;
-                $id5 = $result->ID_Fonction;
-                $id6 = $result->ID_Ent;
-                $id7 = $result->ID_Temps_Trav;
-                $id8 = $result->ID_Contrat;
-                $id9 = $result->ID_Age;
-                $id10 = $result->ID_scociopro;
-                $Nombre_Eff = $result->Nombre_Eff;
-                return [
-                    'ID_Temps' => $id0,
-                    'ID_Date_Recrutement' => $id1,
-                    'ID_Date_Retraite' => $id2,
-                    'ID_Sexe' => $id3,
-                    'ID_Handicap' => $id4,
-                    'ID_Fonction' => $id5,
-                    'ID_Ent' => $id6,
-                    'ID_Temps_Trav' => $id7,
-                    'ID_Contrat' => $id8,
-                    'ID_Age' => $id9,
-                    'ID_scociopro' => $id10,
-                    'Nombre_Eff' => $Nombre_Eff
-                ];
-            });
-   
+            } else {
+                DB::table('femploye')->insert($data);
+                return true;
+            }
+        }
+    });
 
-    $query = DB::table('femploye')->insert($TransformRequest->toArray());
+ 
+
     if ($query) {
         echo "Les données ont bien été transformées."; 
         DB::table('controller_stamp')
@@ -1295,11 +1336,10 @@ Route::get("UpdateFemploye", function () {
         echo "Une erreur s'est produite lors du chargement des données.";              
     }
         
-    return $results;
 });
 
 
-
+// [{"ID_Temps":1482,"ID_Date_Recrutement":1417,"ID_Date_Retraite":"2413","ID_Sexe":1,"ID_Handicap":1,"ID_Fonction":12,"ID_Ent":1,"ID_Temps_Trav":1,"ID_Contrat":2,"ID_scociopro":3,"ID_Age":3,"Nombre_Eff":1}]
 
 
 Route::get('Updateffinance', function () {

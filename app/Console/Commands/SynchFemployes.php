@@ -112,7 +112,47 @@ class SynchFemployes extends Command
         if ($TransformRequest->isEmpty()) {
             Log::info("Non update have Done");
         } else {
-            $query = DB::table('femploye')->insert($TransformRequest->toArray());
+            $values = $TransformRequest->toArray();
+            $query = DB::transaction(function () use ($values) {
+                foreach ($values as $data) {
+                    $existingRecord = DB::table('femploye')
+                        ->where([
+                            'ID_Age' => $data['ID_Age'],
+                            'ID_Contrat' => $data['ID_Contrat'],
+                            'ID_Date_Recrutement' => $data['ID_Date_Recrutement'],
+                            'ID_Date_Retraite' => $data['ID_Date_Retraite'],
+                            'ID_Ent' => $data['ID_Ent'],
+                            'ID_Fonction' => $data['ID_Fonction'],
+                            'ID_Handicap' => $data['ID_Handicap'],
+                            'ID_Sexe' => $data['ID_Sexe'],
+                            'ID_Temps' => $data['ID_Temps'],
+                            'ID_Temps_Trav' => $data['ID_Temps_Trav'],
+                            'ID_scociopro' => $data['ID_scociopro'],
+                        ])
+                        ->first();
+            
+                    if ($existingRecord) {
+                        DB::table('femploye')
+                            ->where('ID_Age', $data['ID_Age'])
+                            ->where('ID_Contrat', $data['ID_Contrat'])
+                            ->where('ID_Date_Recrutement', $data['ID_Date_Recrutement'])
+                            ->where('ID_Date_Retraite', $data['ID_Date_Retraite'])
+                            ->where('ID_Ent', $data['ID_Ent'])
+                            ->where('ID_Fonction', $data['ID_Fonction'])
+                            ->where('ID_Handicap', $data['ID_Handicap'])
+                            ->where('ID_Sexe', $data['ID_Sexe'])
+                            ->where('ID_Temps', $data['ID_Temps'])
+                            ->where('ID_Temps_Trav', $data['ID_Temps_Trav'])
+                            ->where('ID_scociopro', $data['ID_scociopro'])
+                            ->increment('Nombre_Eff', 1);
+                        return true;
+        
+                    } else {
+                        DB::table('femploye')->insert($data);
+                        return true;
+                    }
+                }
+            });
             if ($query) {
                 DB::table('controller_stamp')
                 ->where('table_stamp', '=', 'employes')

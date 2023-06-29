@@ -71,9 +71,9 @@ export default function Login() {
           {errors.email && <div className='errors'> error : {errors.email?.message} </div>}
           <input type="password" placeholder='password' {...register('password')}/>
           {errors.password && <div className='errors'> error : {errors.password?.message} </div>}
-          <button className='btn btn-block' disabled={isSubmitting || !isValid}> Login </button>
+          <button className='btn btn-block' disabled={isSubmitting || !isValid}> Connection </button>
           <p className='message'> 
-           Login page
+           Page de Garde
             {/* <Link to="/signup"> Create an accounts </Link> */}
           </p>
         </form>
