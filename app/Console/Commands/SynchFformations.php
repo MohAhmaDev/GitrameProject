@@ -92,7 +92,44 @@ class SynchFformations extends Command
         if ($TransformRequest->isEmpty()) {
             Log::info("Non update have Done in fformation");
         } else {
-            $query = DB::table('fformation')->insert($TransformRequest->toArray());
+            $values = $TransformRequest->toArray();
+            $query = DB::transaction(function () use ($values) {
+                foreach ($values as $data) {
+                    $existingRecord = DB::table('fformation')
+                        ->where([
+                            'ID_Domaine' => $data['ID_Domaine'],
+                            'ID_Age' => $data['ID_Age'],
+                            'ID_Duree' => $data['ID_Duree'],
+                            'ID_Ent' => $data['ID_Ent'],
+                            'ID_Temps' => $data['ID_Temps'],
+                        ])
+                        ->first();
+            
+                    if ($existingRecord) {
+                        DB::table('fformation')
+                        ->where('ID_Age', $data['ID_Age'])
+                        ->where('ID_Domaine', $data['ID_Domaine'])
+                        ->where('ID_Ent', $data['ID_Ent'])
+                        ->where('ID_Temps', $data['ID_Temps'])
+                        ->where('ID_Duree', $data['ID_Duree'])
+                        ->increment('Nombre_Eff', 1);
+        
+                        DB::table('fformation')
+                        ->where('ID_Age', $data['ID_Age'])
+                        ->where('ID_Domaine', $data['ID_Domaine'])
+                        ->where('ID_Ent', $data['ID_Ent'])
+                        ->where('ID_Temps', $data['ID_Temps'])
+                        ->where('ID_Duree', $data['ID_Duree'])
+                        ->increment('Montant', $data['Montant']);
+                        return true;
+        
+                    } else {
+                        DB::table('fformation')->insert($data);
+                        return true;
+                    }
+                }
+            });
+
             if ($query) {
                 DB::table('controller_stamp')
                 ->where('table_stamp', '=', 'fformation')

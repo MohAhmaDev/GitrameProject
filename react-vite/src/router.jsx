@@ -26,6 +26,7 @@ import FormationForm from './views/FormationForm'
 import UserTest from './views/UserTest';
 import GitramReports from './views/MUI/GitramReports';
 import TableRHS from './views/MUI/TableRHS';
+import BarChart from './views/BarChart';
 
 
 const router = createBrowserRouter([
@@ -138,7 +139,7 @@ const router = createBrowserRouter([
             {
                 path: '/report/:table',
                 element: <GitramReports />
-            },
+            }
         ]
     },
     {

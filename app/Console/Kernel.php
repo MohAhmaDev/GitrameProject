@@ -15,6 +15,8 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         $schedule->command('synch:femployes')->everyMinute();
         $schedule->command('synch:fformations')->everyMinute();
+        $schedule->command('synch:ffinances')->everyMinute();
+
     }
 
     /**

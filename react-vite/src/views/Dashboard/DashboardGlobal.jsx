@@ -5,6 +5,7 @@ import { Box,colors, Typography, IconButton, Button, CircularProgress } from '@m
 import NivoChar from '../MUI/NivoChar';
 import NivoBar from '../MUI/NivoBar';
 import NivoLine from '../MUI/NivoLine';
+import NivoRadar from '../MUI/NivoRadar';
 
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Woman2Icon from '@mui/icons-material/Woman2';
@@ -19,6 +20,11 @@ export default function DashboardGlobal() {
   const [key, setKey] = useState([]);
   const [post, setPost] = useState({});
   const [dataCa, setDataCa] = useState();
+  const [myData, setMyData] = useState({});
+  const [mykey, setMykey] = useState();
+  const [stats, setStats] = useState();
+  const [radarData, setRadarData] = useState({});
+  const [dashFormation, setDashFormation] = useState({});
 
 
   const [makeLine, setMakeLine] = useState([]);
@@ -57,12 +63,39 @@ export default function DashboardGlobal() {
     }).catch((err) => console.log(err))
   };
 
+  const getFinanceDashData = () => {
+    axiosClient.get('/dash_finance_bar').then(({data}) => {
+        setMyData(data.data);
+        setMykey(data.column);
+        setStats(data.stats)
+    }).catch((error) => {
+        console.log(error)
+    })
+  }
 
+  const getRadarData = () => {
+    axiosClient.get('/dash_finance_radar').then(({data}) => {
+      setRadarData(data)
+    }).catch((error) => {
+      console.log(error)
+    })
+  }
+
+  const getDashFormation = () => {
+    axiosClient.get('/dash_fformation_pie').then(({data}) => {
+      setDashFormation(data)
+    }).catch((error) => {
+      console.log(error)
+    })
+  }
 
   useEffect(() => {
     getData();
     getLineData();
     getCa();
+    getFinanceDashData();
+    getRadarData();
+    getDashFormation();
   }, [])
 
   useEffect(() => {
@@ -90,6 +123,8 @@ export default function DashboardGlobal() {
     // CDI - CDD / NBemployes
     (Object.keys(dash03).length !== 0) && console.log("cdi-cdd", dash03);
     // Line Dash
+    (Object.keys(dashFormation).length !== 0) && console.log("fformation-nbr", dashFormation);
+    // Line Dash 02
     (makeLine.length !== 0) && console.log(("line --", makeLine));
     // Sexe / Effectifs
     (Object.keys(dash01).length !== 0) && console.log("sexe: ", dash01);
@@ -103,7 +138,8 @@ export default function DashboardGlobal() {
   return (
     <>
         {((key.length !== 0) && (Object.keys(post).length !== 0) && (Object.keys(dash03).length !== 0)
-        && (makeLine.length !== 0)) ?
+        && (makeLine.length !== 0) && (Object.keys(myData).length !== 0) 
+        && (Object.keys(radarData).length !== 0) && (Object.keys(dashFormation).length !== 0)) ?
         <div>
           <h1> Dashboard </h1>
           <div className="card animated fadeInDown" style={{ marginTop: "25px" }}>
@@ -111,6 +147,72 @@ export default function DashboardGlobal() {
                 marginBottom: "20px"
             }}> Graphes et Statistique sur les différents module du Groupe </h2>
             <Box display="grid" gridTemplateColumns="repeat(12, 1fr)" gridAutoRows="170px" gap="20px"> 
+              <Box  
+                gridColumn="span 4"
+                gridRow="span 2"
+                // backgroundColor={colors.grey['100']}
+                border={"1px solid #2196f3"}
+                borderRadius="5px"
+                display="flex" 
+                justifyContent="space-between"
+                paddingTop="25px"
+                paddingBottom="50px" 
+                alignItems="center" 
+                flexDirection="column"
+              >
+                <h2> Montants Dettes/Creances </h2>
+                <Box sx={{ height: "60px", width: "300px", border:"1px solid #2196f3", borderRadius: "5px" ,
+                  textAlign: "center", padding: "15px 0 15px 0", color: colors.blue[700]
+                }}>
+                  <h3> Montant Total Dettes : {stats[0]} </h3>
+                </Box>
+                <Box sx={{ height: "60px", width: "300px", border:"1px solid #2196f3", borderRadius: "5px" ,
+                  textAlign: "center", padding: "15px 0 15px 0", color: colors.blue[700]
+                }}>
+                  <h3> Montant Total Creances : {stats[1]} </h3>
+                </Box>                
+                <Box sx={{ height: "60px", width: "300px", border:"1px solid #2196f3", borderRadius: "5px" ,
+                  textAlign: "center", padding: "15px 0 15px 0", color: colors.blue[700]
+                }}>
+                  <h3> Montant Total Factures : {stats[2]} </h3>
+                </Box>                
+              </Box>
+              {/* BOX SP 2.0 */}
+              <Box  
+                gridColumn="span 4"
+                gridRow="span 2"
+                // backgroundColor={colors.grey['100']}
+                border={"1px solid #2196f3"}
+                borderRadius="5px">
+                  <Typography
+                      variant="h5"
+                      fontWeight="600"
+                      sx={{ padding: "10px 10px 0 30px" }}
+                  >
+                    Stats Fianance
+                  </Typography>
+                  <Box height="350px" mt="-10px" marginRight={"20px"}>
+                      <NivoRadar data={radarData}/>
+                  </Box>
+              </Box>
+              {/* BOX SP 3.0 */}
+              <Box
+                gridColumn="span 4"
+                gridRow="span 2"
+                border={"1px solid #2196f3"}
+                borderRadius="5px"
+                  >
+                      <Typography
+                          variant="h5"
+                          fontWeight="600"
+                          sx={{ padding: "10px 10px 0 30px" }}
+                      >
+                        Formation Répartition
+                      </Typography>
+                      <Box height="300px" mt="0px">
+                          <NivoChar data={dashFormation} dash02={true}/>
+                      </Box>
+              </Box> 
               <Box gridColumn="span 4" gridRow="span 2" backgroundColor={"#007bff"} overflow="auto" borderRadius={`5px`}>
                   <Box 
                   display="flex" 
@@ -263,6 +365,25 @@ export default function DashboardGlobal() {
                           <NivoLine data={makeLine}/>
                       </Box>
               </Box>
+              <Box  
+                gridColumn="span 12"
+                gridRow="span 2"
+                border={"1px solid #2196f3"}
+                borderRadius="5px">
+                  {((mykey && mykey.length !== 0) && (Object.keys(myData).length !== 0)) && <>
+                    <Typography
+                        variant="h5"
+                        fontWeight="600"
+                        sx={{ padding: "10px 10px 0 30px" }}
+                    >
+                        Realisation/Privision Finance
+                    </Typography>
+                    <Box height="300px" mt="-10px" padding={"0 25px 0 25px"}>
+                      <NivoBar data={myData} columns={mykey} index={"Mois"} 
+                      legend={"Chiffre d'affaire"} enableLabel={false} innerPadding={0} padding={0.3}/>
+                    </Box>
+                </>}
+              </Box>
               <Box
                 gridColumn="span 8"
                 gridRow="span 2"
@@ -277,7 +398,8 @@ export default function DashboardGlobal() {
                     Tranches d'age des employes
                 </Typography>
                 <Box height="300px" mt="-10px">
-                    <NivoBar data={post} columns={key}/>
+                    <NivoBar data={[post]} columns={key} index={"tranche d'age"} legend={'Nombre effectifs'}
+                    innerPadding={10} padding={0.01}/>
                 </Box>
               </Box> 
               <Box
@@ -291,7 +413,7 @@ export default function DashboardGlobal() {
                           fontWeight="600"
                           sx={{ padding: "10px 10px 0 30px" }}
                       >
-                        Nombre  CDI-CDD
+                        Nombre CDI-CDD
                       </Typography>
                       <Box height="300px" mt="-10px">
                           <NivoChar data={dash03}/>

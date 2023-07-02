@@ -337,11 +337,11 @@ const Dashboard01 = () => {
 
             {(role && role === "global") && <>
             <Box
-                minHeight={"175px"}
-                gridColumn="span 8"
-                backgroundColor={colors.grey['100']}
-                borderRadius="5px"
-                >
+            minHeight={"175px"}
+            gridColumn="span 8"
+            backgroundColor={colors.grey['100']}
+            borderRadius="5px"
+            >
                 <Typography
                     variant="h5"
                     fontWeight="600"
@@ -350,7 +350,8 @@ const Dashboard01 = () => {
                     Tranches d'age des employes
                 </Typography>
                 <Box height="300px" mt="-10px">
-                    <NivoBar data={post} columns={key}/>
+                    <NivoBar data={[post]} columns={key} index={"tranche d'age"} legend={'Nombre effectifs'}
+                    innerPadding={10} padding={0.01}/>
                 </Box>
             </Box> 
           
@@ -397,13 +398,6 @@ const Dashboard01 = () => {
         </div> :<CircularProgress disableShrink sx={{ marginTop: "50px" }}/>}
     </>
     );
-};
-
-const viewerStyle = {
-    display: "block",
-    margin: "0 auto",
-    width: "70vw",
-    height: "90vh"
 };
 
 export default Dashboard01;

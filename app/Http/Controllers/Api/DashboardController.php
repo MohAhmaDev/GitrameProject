@@ -1139,6 +1139,97 @@ class DashboardController extends Controller
         ];
     }
 
+    public function getFinanceBar() {
+        
+        $moisLabels = [
+            1 => 'Janvier',
+            2 => 'Fevrier',
+            3 => 'Mars',
+            4 => 'Avril',
+            5 => 'Mai',
+            6 => 'Juin',
+            7 => 'Juillet',
+            8 => 'Aout',
+            9 => 'Septembre',
+            10 => 'Octobre',
+            11 => 'Novembre',
+            12 => 'Decembre',
+        ];
+        
+        $results = DB::table('ffinance')
+            ->join('dtemps', 'ffinance.ID_Date_Agregats', '=', 'dtemps.ID_Temps')
+            ->select('ffinance.Montant_Realisation as realisation', 'ffinance.Montant_Privision as privision', 'dtemps.mois as Mois')
+            ->groupBy('Mois')
+            ->get();
+        
+        // Parcourir les résultats et remplacer les numéros de mois par les libellés correspondants
+        foreach ($results as $result) {
+            $mois = $result->Mois;
+            $result->Mois = $moisLabels[$mois];
+        }
+        
+        $result = DB::table('fcreances_dettes')
+        ->selectRaw('SUM(fcreances_dettes.Montant_Creances) as MontantCreances, SUM(fcreances_dettes.Montant_Dettes) as MontantDettes, SUM(fcreances_dettes.Montant_Factures) as MontantFactures')
+        ->first();
+    
+        $montantCreances = $result->MontantCreances;
+        $montantDettes = $result->MontantDettes;
+        $montantFactures = $result->MontantFactures;
+    
+        $stats = [$montantDettes, $montantCreances, $montantFactures];
+    
+        return response(['data' => $results,'column' => ["realisation","privision"],
+        'stats' => $stats]);    
+    }
+
+
+    public function get_Finance_radar() {
+
+        $results = DB::table('ffinance')
+        ->join('dagregats', 'ffinance.ID_Agregats', '=', 'dagregats.ID_Agregats')
+        ->join('dtemps', 'ffinance.ID_Date_Agregats', '=', 'dtemps.ID_Temps')
+        ->select(DB::raw('SUM(Montant_Realisation) as Montant_Realisation'),
+            DB::raw('CASE WHEN dagregats.Type_Agregats = "consomation" THEN "Consommations" 
+                WHEN dagregats.Type_Agregats = "production" THEN "Production" 
+                WHEN dagregats.Type_Agregats = "vente" THEN "Vente" 
+                WHEN dagregats.Type_Agregats = "autre" THEN "Autre Agregats" 
+                END AS Agregat_calculer'))
+        ->groupBy('Agregat_calculer')
+        ->get();
+    
+        $resultat = $results->map(function ($result) {
+            $labal = $result->Agregat_calculer;
+            $value = $result->Montant_Realisation;
+            return [
+                "label" => $labal,
+                "value" => $value,
+            ];
+        }); 
+    
+        return $resultat;
+    
+    }
+
+    public function get_fformation_dash() {
+
+        $results = DB::table('fformation')
+        ->join('ddomaine', 'fformation.ID_Domaine', '=', 'ddomaine.ID_Domaine')
+        ->select('ddomaine.Domaine as domaine', DB::raw('SUM(fformation.Nombre_Eff) AS nb_effectifs'))
+        ->groupBy('fformation.ID_Domaine', 'ddomaine.Domaine')
+        ->get();
+
+        $resultat = $results->map(function ($result) {
+            $labal = $result->domaine;
+            $value = $result->nb_effectifs;
+            return [
+                "id" => $labal,
+                "label" => $labal,
+                "value" => intval($value),            
+            ];
+        });
+
+        return $resultat;
+    }
 
 }
 

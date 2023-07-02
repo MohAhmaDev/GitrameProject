@@ -3,15 +3,17 @@ import { ResponsiveBar } from '@nivo/bar'
 import { colors } from '@mui/material';
 
 
-const NivoBar = ({data, columns}) => {
+const NivoBar = ({data, columns, index, legend, enableLabel=true, innerPadding, padding}) => {
+
+
     return (
         <ResponsiveBar
-            data={[data]}
+            data={data}
             keys={columns}
-            indexBy="tranche d'age"
+            indexBy={index}
             margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
-            // padding={0.3}
-            innerPadding={10}
+            padding={padding}
+            innerPadding={innerPadding}
             groupMode="grouped"
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
@@ -48,21 +50,22 @@ const NivoBar = ({data, columns}) => {
             axisTop={null}
             axisRight={null}
             axisBottom={{
-                tickSize: 5,
+                tickSize: 2,
                 tickPadding: 5,
                 tickRotation: 0,
-                legend: "tranche d'age",
+                legend: index,
                 legendPosition: 'middle',
                 legendOffset: 32
             }}
             axisLeft={{
                 tickSize: 5,
-                tickPadding: 5,
+                tickPadding: 3,
                 tickRotation: 0,
-                legend: 'Nombre effectifs',
+                legend: legend,
                 legendPosition: 'middle',
-                legendOffset: -40
+                legendOffset: -50
             }}
+            enableLabel={enableLabel}
             labelSkipWidth={12}
             labelSkipHeight={12}
             labelTextColor={{

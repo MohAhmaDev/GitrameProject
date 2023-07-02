@@ -68,6 +68,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/date_fcreance_dettes', [DashboardController::class, 'get_Mois']);
     Route::post('/dash_formation', [DashboardController::class, 'get_fformation']);
     Route::post('/dash_femployes', [DashboardController::class, 'get_rhs_stats']);
+    Route::get('/dash_finance_bar', [DashboardController::class, 'getFinanceBar']);
+    Route::get('/dash_finance_radar', [DashboardController::class, 'get_Finance_radar']);
+    Route::get('/dash_fformation_pie', [DashboardController::class, 'get_fformation_dash']);
 
 });
 

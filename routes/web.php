@@ -1325,8 +1325,6 @@ Route::get("UpdateFemploye", function () {
         }
     });
 
- 
-
     if ($query) {
         echo "Les données ont bien été transformées."; 
         DB::table('controller_stamp')
@@ -1474,12 +1472,50 @@ Route::get('UpdateFormation', function () {
         ];
     });
 
-    $query = DB::table('fformation')->insert($TransformRequest->toArray());
+    $values = $TransformRequest->toArray();
+    
+    $query = DB::transaction(function () use ($values) {
+        foreach ($values as $data) {
+            $existingRecord = DB::table('fformation')
+                ->where([
+                    'ID_Domaine' => $data['ID_Domaine'],
+                    'ID_Age' => $data['ID_Age'],
+                    'ID_Duree' => $data['ID_Duree'],
+                    'ID_Ent' => $data['ID_Ent'],
+                    'ID_Temps' => $data['ID_Temps'],
+                ])
+                ->first();
+    
+            if ($existingRecord) {
+                DB::table('fformation')
+                ->where('ID_Age', $data['ID_Age'])
+                ->where('ID_Domaine', $data['ID_Domaine'])
+                ->where('ID_Ent', $data['ID_Ent'])
+                ->where('ID_Temps', $data['ID_Temps'])
+                ->where('ID_Duree', $data['ID_Duree'])
+                ->increment('Nombre_Eff', 1);
+
+                DB::table('fformation')
+                ->where('ID_Age', $data['ID_Age'])
+                ->where('ID_Domaine', $data['ID_Domaine'])
+                ->where('ID_Ent', $data['ID_Ent'])
+                ->where('ID_Temps', $data['ID_Temps'])
+                ->where('ID_Duree', $data['ID_Duree'])
+                ->increment('Montant', $data['Montant']);
+                return true;
+
+            } else {
+                DB::table('fformation')->insert($data);
+                return true;
+            }
+        }
+    });
+
     if ($query) {
+        echo "Les données ont bien été transformées."; 
         DB::table('controller_stamp')
-        ->where('table_stamp', '=', 'formations')
-        ->update(['last_timp_stamp' => $lastTimestamp]);
-        echo "Les données ont bien été transformées.";                             
+         ->where('table_stamp', '=', 'fformation')
+         ->update(['last_timp_stamp' => $lastTimestamp]);                            
     } else { 
         echo "Une erreur s'est produite lors du chargement des données.";              
     }
@@ -1492,55 +1528,57 @@ Route::get('UpdateFormation', function () {
 Route::get('Updatafdettes_crences', function () {
 
     $timestemp = DB::table('controller_stamp')
-    ->where('table_stamp', 'creances_dettes')
-    ->max(DB::raw("DATE_FORMAT(last_timp_stamp, '%Y-%m')"));
+    ->where('table_stamp', 'dettes_creances')
+    ->max('last_timp_stamp');
     $lastTimestamp = DB::raw("DATE_FORMAT(CURRENT_DATE(), '%Y-%m')");
 
-    $results = DB::table('creances')
-    ->select(
-        'dtemps.ID_Temps AS ID_Temps',
-        'dentreprise_A.ID_Ent AS ID_Ent_A',
-        'dentreprise_B.ID_Ent AS ID_Ent_B',
-        DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") >= DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN SUM(creances.Montant - creances.montant_encaissement) ELSE 0 END AS Montant_Factures'),
-        DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") < DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN SUM(creances.Montant - creances.montant_encaissement) ELSE 0 END AS Montant_Creances'),
-        DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") >= DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN COUNT(creances.Montant) ELSE 0 END AS Nbr_Factures'),
-        DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") < DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN COUNT(creances.Montant) ELSE 0 END AS Nbr_Creances'),
-        DB::raw('0 AS Montant_Dettes'),
-        DB::raw('0 AS Nbr_Dettes'),
-        DB::raw('0 AS Creances_vs_Dettes')
-    )
-    ->join('dtemps', DB::raw("DATE_FORMAT(CURRENT_DATE(), '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps.DATE, '%Y-%m')"))
-    ->join('dentreprise AS dentreprise_A', 'creances.debtor_id', '=', 'dentreprise_A.ID_Ent')
-    ->join('dentreprise AS dentreprise_B', 'creances.creditor_id', '=', 'dentreprise_B.ID_Ent')
-    ->where('creances.regler', 0)
-    ->groupBy('dentreprise_A.ID_Ent', 'dentreprise_B.ID_Ent')
-    ->union(function ($query) {
-        $query->select(
+    $date = DB::selectOne('SELECT DATE_FORMAT(CURRENT_DATE(), "%Y-%m") AS formatted_date');
+    $formattedDate = $date->formatted_date;
+
+    if ($formattedDate !== $timestemp) {
+        $results = DB::table('creances')
+        ->select(
             'dtemps.ID_Temps AS ID_Temps',
             'dentreprise_A.ID_Ent AS ID_Ent_A',
             'dentreprise_B.ID_Ent AS ID_Ent_B',
-            DB::raw('0 AS Montant_Factures'),
-            DB::raw('0 AS Montant_Creances'),
-            DB::raw('0 AS Nbr_Factures'),
-            DB::raw('0 AS Nbr_Creances'),
-            DB::raw('SUM(dettes.Montant - dettes.montant_encaissement) AS Montant_Dettes'),
-            DB::raw('COUNT(dettes.Montant) AS Nbr_Dettes'),
+            DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") >= DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN SUM(creances.Montant - creances.montant_encaissement) ELSE 0 END AS Montant_Factures'),
+            DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") < DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN SUM(creances.Montant - creances.montant_encaissement) ELSE 0 END AS Montant_Creances'),
+            DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") >= DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN COUNT(creances.Montant) ELSE 0 END AS Nbr_Factures'),
+            DB::raw('CASE WHEN DATE_FORMAT(creances.anteriorite_creance, "%Y-%m") < DATE_FORMAT(CURRENT_DATE(), "%Y-%m") THEN COUNT(creances.Montant) ELSE 0 END AS Nbr_Creances'),
+            DB::raw('0 AS Montant_Dettes'),
+            DB::raw('0 AS Nbr_Dettes'),
             DB::raw('0 AS Creances_vs_Dettes')
         )
-        ->from('dettes')
         ->join('dtemps', DB::raw("DATE_FORMAT(CURRENT_DATE(), '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps.DATE, '%Y-%m')"))
-        ->join('dentreprise AS dentreprise_A', 'dettes.debtor_id', '=', 'dentreprise_A.ID_Ent')
-        ->join('dentreprise AS dentreprise_B', 'dettes.creditor_id', '=', 'dentreprise_B.ID_Ent')
-        ->where('dettes.regler', 0)
-        ->groupBy('dentreprise_A.ID_Ent', 'dentreprise_B.ID_Ent');
-    })
-    // ->whereRaw("DATE_FORMAT(CURRENT_DATE(), '%Y-%m') != ?", [$timestemp])
-    ->groupBy('ID_Ent_A', 'ID_Ent_B')
-    ->get();
-
-
-    
-    
+        ->join('dentreprise AS dentreprise_A', 'creances.debtor_id', '=', 'dentreprise_A.ID_Ent')
+        ->join('dentreprise AS dentreprise_B', 'creances.creditor_id', '=', 'dentreprise_B.ID_Ent')
+        ->where('creances.regler', 0)
+        ->groupBy('dentreprise_A.ID_Ent', 'dentreprise_B.ID_Ent')
+        ->union(function ($query) {
+            $query->select(
+                'dtemps.ID_Temps AS ID_Temps',
+                'dentreprise_A.ID_Ent AS ID_Ent_A',
+                'dentreprise_B.ID_Ent AS ID_Ent_B',
+                DB::raw('0 AS Montant_Factures'),
+                DB::raw('0 AS Montant_Creances'),
+                DB::raw('0 AS Nbr_Factures'),
+                DB::raw('0 AS Nbr_Creances'),
+                DB::raw('SUM(dettes.Montant - dettes.montant_encaissement) AS Montant_Dettes'),
+                DB::raw('COUNT(dettes.Montant) AS Nbr_Dettes'),
+                DB::raw('0 AS Creances_vs_Dettes')
+            )
+            ->from('dettes')
+            ->join('dtemps', DB::raw("DATE_FORMAT(CURRENT_DATE(), '%Y-%m')"), '=', DB::raw("DATE_FORMAT(dtemps.DATE, '%Y-%m')"))
+            ->join('dentreprise AS dentreprise_A', 'dettes.debtor_id', '=', 'dentreprise_A.ID_Ent')
+            ->join('dentreprise AS dentreprise_B', 'dettes.creditor_id', '=', 'dentreprise_B.ID_Ent')
+            ->where('dettes.regler', 0)
+            ->groupBy('dentreprise_A.ID_Ent', 'dentreprise_B.ID_Ent');
+        })
+        ->groupBy('ID_Ent_A', 'ID_Ent_B')
+        ->get();
+    } else {
+        $results = [];
+    }
     // Tableau pour stocker les agrégats
     $aggregatedResults = [];
     
@@ -1579,18 +1617,18 @@ Route::get('Updatafdettes_crences', function () {
     // $results = $finalResults;
     
     $aggregatedResultsArray = json_decode(json_encode($aggregatedResults), true);
-    
-    $query = DB::table('fcreances_dettes')->insert($aggregatedResultsArray);
-    if ($query) {
-        echo "Les données ont bien été transformées.";     
-        DB::table('controller_stamp')
-        ->where('table_stamp', '=', 'dettes_creances')
-        ->update(['last_timp_stamp' => $lastTimestamp]);                        
-    } else { 
-        echo "Une erreur s'est produite lors du chargement des données.";              
-    }
 
-    // return $aggregatedResultsArray;
+    // $query = DB::table('fcreances_dettes')->insert($aggregatedResultsArray);
+    // if ($query) {
+    //     echo "Les données ont bien été transformées.";     
+    //     DB::table('controller_stamp')
+    //     ->where('table_stamp', '=', 'dettes_creances')
+    //     ->update(['last_timp_stamp' => $lastTimestamp]);                        
+    // } else { 
+    //     echo "Une erreur s'est produite lors du chargement des données.";              
+    // }
+    
+    return $aggregatedResultsArray;
 });
     
 
@@ -2680,3 +2718,104 @@ Route::get('femploye_dash', function () {
     // {"nb_effectifs":1,"statue":"Cadre","contact":"CDI","temps":"Temps plein","sexe":"Femme","age":"21-25 ans"}
 });
 
+
+
+
+
+
+
+Route::get('dash_ffinance_02', function () {
+
+    $moisLabels = [
+        1 => 'Janvier',
+        2 => 'Fevrier',
+        3 => 'Mars',
+        4 => 'Avril',
+        5 => 'Mai',
+        6 => 'Juin',
+        7 => 'Juillet',
+        8 => 'Aout',
+        9 => 'Septembre',
+        10 => 'Octobre',
+        11 => 'Novembre',
+        12 => 'Decembre',
+    ];
+    
+    $results = DB::table('ffinance')
+        ->join('dtemps', 'ffinance.ID_Date_Agregats', '=', 'dtemps.ID_Temps')
+        ->select('ffinance.Montant_Realisation as realisation', 'ffinance.Montant_Privision as privision', 'dtemps.mois as Mois')
+        ->groupBy('Mois')
+        ->get();
+    
+    // Parcourir les résultats et remplacer les numéros de mois par les libellés correspondants
+    foreach ($results as $result) {
+        $mois = $result->Mois;
+        $result->Mois = $moisLabels[$mois];
+    }
+    
+    $result = DB::table('fcreances_dettes')
+    ->selectRaw('SUM(fcreances_dettes.Montant_Creances) as MontantCreances, SUM(fcreances_dettes.Montant_Dettes) as MontantDettes, SUM(fcreances_dettes.Montant_Factures) as MontantFactures')
+    ->first();
+
+    $montantCreances = $result->MontantCreances;
+    $montantDettes = $result->MontantDettes;
+    $montantFactures = $result->MontantFactures;
+
+    $stats = [$montantDettes, $montantCreances, $montantFactures];
+
+
+    return response(['data' => $results,'column' => ["realisation","privision"],
+    'stats' => $stats]);
+
+
+
+});
+
+
+
+
+Route::get('dash_finance_03', function () {
+    $results = DB::table('ffinance')
+    ->join('dagregats', 'ffinance.ID_Agregats', '=', 'dagregats.ID_Agregats')
+    ->join('dtemps', 'ffinance.ID_Date_Agregats', '=', 'dtemps.ID_Temps')
+    ->select(DB::raw('SUM(Montant_Realisation) as Montant_Realisation'),
+        DB::raw('CASE WHEN dagregats.Type_Agregats = "vente" THEN "Vente" 
+            WHEN dagregats.Type_Agregats = "production" THEN "Production" 
+            WHEN dagregats.Type_Agregats = "consomation" THEN "Consommations" 
+            WHEN dagregats.Type_Agregats = "autre" THEN "Autre Agregats" 
+            END AS Agregat_calculer'))
+    ->groupBy('Agregat_calculer')
+    ->get();
+
+
+    $resultat = $results->map(function ($result) {
+        $labal = $result->Agregat_calculer;
+        $value = $result->Montant_Realisation;
+        return [
+            "label" => $labal,
+            "value" => $value,
+        ];
+    }); 
+
+    return $resultat;
+
+});
+
+
+Route::get("dash_fformation_02", function () {
+    $results = DB::table('fformation')
+    ->join('ddomaine', 'fformation.ID_Domaine', '=', 'ddomaine.ID_Domaine')
+    ->select('ddomaine.Domaine as domaine', DB::raw('SUM(fformation.Nombre_Eff) AS nb_effectifs'))
+    ->groupBy('fformation.ID_Domaine', 'ddomaine.Domaine')
+    ->get();
+
+    $resultat = $results->map(function ($result) {
+        $labal = $result->domaine;
+        $value = $result->nb_effectifs;
+        return [
+            $labal => $value
+        ];
+    });
+    return $resultat;
+
+});
