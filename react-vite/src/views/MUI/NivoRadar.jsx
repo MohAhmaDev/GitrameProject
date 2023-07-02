@@ -6,7 +6,7 @@ const NivoRadar = ({data}) => {
     return (
         <ResponsiveRadar
             data={data}
-            keys={['value']}
+            keys={['valeur ca']}
             indexBy="label"
             valueFormat=">-.2f"
             margin={{ top: 50, right: 50, bottom: 40, left: 50 }}

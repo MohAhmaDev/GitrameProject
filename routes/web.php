@@ -1614,7 +1614,6 @@ Route::get('Updatafdettes_crences', function () {
     
     // Convertit le tableau des agrégats en une liste de résultats
     $finalResults = array_values($aggregatedResults);
-    // $results = $finalResults;
     
     $aggregatedResultsArray = json_decode(json_encode($aggregatedResults), true);
 
@@ -1628,7 +1627,9 @@ Route::get('Updatafdettes_crences', function () {
     //     echo "Une erreur s'est produite lors du chargement des données.";              
     // }
     
-    return $aggregatedResultsArray;
+    return ($aggregatedResultsArray);
+        // $results = $finalResults;
+
 });
     
 

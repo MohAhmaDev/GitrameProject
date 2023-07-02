@@ -189,7 +189,7 @@ export default function DashboardGlobal() {
                       fontWeight="600"
                       sx={{ padding: "10px 10px 0 30px" }}
                   >
-                    Stats Fianance
+                    CA Agregat Fianance
                   </Typography>
                   <Box height="350px" mt="-10px" marginRight={"20px"}>
                       <NivoRadar data={radarData}/>

@@ -1202,7 +1202,7 @@ class DashboardController extends Controller
             $value = $result->Montant_Realisation;
             return [
                 "label" => $labal,
-                "value" => $value,
+                "valeur ca" => $value,
             ];
         }); 
     
