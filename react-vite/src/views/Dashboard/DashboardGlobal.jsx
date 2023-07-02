@@ -376,7 +376,7 @@ export default function DashboardGlobal() {
                         fontWeight="600"
                         sx={{ padding: "10px 10px 0 30px" }}
                     >
-                        Realisation/Privision Finance
+                      Différence Realisation/Privision Finance
                     </Typography>
                     <Box height="300px" mt="-10px" padding={"0 25px 0 25px"}>
                       <NivoBar data={myData} columns={mykey} index={"Mois"} 

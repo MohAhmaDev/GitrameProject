@@ -1390,15 +1390,17 @@ Route::get('Updateffinance', function () {
         ];
     });
     
-    $query = DB::table('ffinance')->insert($TransformRequest->toArray());
-    if ($query) {
-        DB::table('controller_stamp')
-            ->where('table_stamp', '=', 'finances')
-            ->update(['last_timp_stamp' => $lastTimestamp]);
-        echo "Les données ont bien été transformées.";                             
-    } else { 
-        echo "Une erreur s'est produite lors du chargement des données.";              
-    }
+    // $query = DB::table('ffinance')->insert($TransformRequest->toArray());
+    // if ($query) {
+    //     DB::table('controller_stamp')
+    //         ->where('table_stamp', '=', 'finances')
+    //         ->update(['last_timp_stamp' => $lastTimestamp]);
+    //     echo "Les données ont bien été transformées.";                             
+    // } else { 
+    //     echo "Une erreur s'est produite lors du chargement des données.";              
+    // }
+
+    return $TransformRequest;
 
 });
 

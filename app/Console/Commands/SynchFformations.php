@@ -132,7 +132,7 @@ class SynchFformations extends Command
 
             if ($query) {
                 DB::table('controller_stamp')
-                ->where('table_stamp', '=', 'fformation')
+                ->where('table_stamp', '=', 'formations')
                 ->update(['last_timp_stamp' => $lastTimestamp]);
                 Log::info("Update done in fformation!");
             }   

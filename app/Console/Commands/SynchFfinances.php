@@ -82,7 +82,7 @@ class SynchFfinances extends Command
             $query = DB::table('ffinance')->insert($TransformRequest->toArray());
             if ($query) {
                 DB::table('controller_stamp')
-                ->where('table_stamp', '=', 'ffinance')
+                ->where('table_stamp', '=', 'finances')
                 ->update(['last_timp_stamp' => $lastTimestamp]);
                 Log::info("Update done in ffinance!");
             }   
